@@ -17,13 +17,14 @@ import {
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-4xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+      <main className="flex min-h-screen w-full max-w-4xl flex-col items-center justify-between py-32 px-16 gap-6 bg-white dark:bg-black sm:items-start">
+        <h1>Book tracker</h1>
         <div>
           <h2>Profile</h2>
           <Badge variant={"outline"}>username</Badge>
         </div>
         <Button>Add new book</Button>
-        <h2>Read books</h2>
+        <h2>Books to read</h2>
         {/* Carousel start */}
         <Carousel className="w-full">
           <CarouselContent>
@@ -159,7 +160,7 @@ export default function Home() {
           <CarouselPrevious />
           <CarouselNext />
         </Carousel>
-        <h2>Books to read</h2>
+        <h2>Read books</h2>
         {/* Carousel start */}
         <Carousel className="w-full">
           <CarouselContent>
