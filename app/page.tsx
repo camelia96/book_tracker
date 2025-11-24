@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { AddBook } from "@/components/ui/add-book-form";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import {
@@ -13,6 +13,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function Home() {
   return (
@@ -23,7 +33,11 @@ export default function Home() {
           <h2>Profile</h2>
           <Badge variant={"outline"}>username</Badge>
         </div>
-        <Button>Add new book</Button>
+
+        {/* Add new book */}
+        <AddBook/>
+
+        
         <h2>Books to read</h2>
         {/* Carousel start */}
         <Carousel className="w-full">
