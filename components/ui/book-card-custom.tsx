@@ -3,13 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { Badge } from "@/components/ui/badge";
-import { BookTextIcon } from "./book-text";
-import { UserIcon } from "./user";
-import { CalendarDaysIcon } from "./calendar-days";
-import { booksModel, statusesModel, books_profilesModel, books_profiles_progressModel } from "@/generated/prisma/models";
-import { SetStateAction, useEffect, useState } from "react";
+import { statusesModel, books_profiles_progressModel } from "@/generated/prisma/models";
+import { useEffect, useState } from "react";
 import { getStatuses } from "@/actions/statuses";
-import { books_profiles } from "@/generated/prisma/client";
 import { BookWithProfiles } from "@/types/types";
 import { Separator } from "@/components/ui/separator";
 
@@ -22,9 +18,6 @@ import {
 } from "@/components/ui/select"
 import { Book, Calendar, ChevronsUpDown, Plus, User } from "lucide-react";
 import { getBookProfileProgress } from "@/actions/books";
-import { IN_PROGRESS_ID } from "@/app/constants/statuses";
-import { Decimal } from "@prisma/client/runtime/client";
-import { SelectSeparator } from "@radix-ui/react-select";
 
 interface CardProps {
   book: BookWithProfiles,

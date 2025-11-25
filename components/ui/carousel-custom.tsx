@@ -1,4 +1,3 @@
-import { booksModel } from "@/generated/prisma/models";
 import {
     Carousel,
     CarouselContent,

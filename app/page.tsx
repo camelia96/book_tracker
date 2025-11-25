@@ -1,10 +1,8 @@
 "use client"
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { AddBook } from "@/components/ui/add-book-form-custom";
 
-import { BookCard } from "@/components/ui/book-card-custom";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import { getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
