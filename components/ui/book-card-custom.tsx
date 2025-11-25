@@ -1,5 +1,4 @@
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
@@ -7,54 +6,139 @@ import { Badge } from "@/components/ui/badge";
 import { BookTextIcon } from "./book-text";
 import { UserIcon } from "./user";
 import { CalendarDaysIcon } from "./calendar-days";
+import { booksModel, statusesModel, books_profilesModel, books_profiles_progressModel } from "@/generated/prisma/models";
+import { SetStateAction, useEffect, useState } from "react";
+import { getStatuses } from "@/actions/statuses";
+import { books_profiles } from "@/generated/prisma/client";
+import { BookWithProfiles } from "@/types/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Book, Calendar, ChevronsUpDown, Plus, User } from "lucide-react";
+import { getBookProfileProgress } from "@/actions/books";
+import { IN_PROGRESS_ID } from "@/app/constants/statuses";
+import { Decimal } from "@prisma/client/runtime/client";
 
 interface CardProps {
-  title: string
-  /*description: string*/
+  book: BookWithProfiles,
   enhanced?: boolean
-  /*onClick?: () => void*/
 }
 
-export function BookCard({ title, enhanced = false }: CardProps) {
+function formatDate(date: Date) {
+  return date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear();
+}
+
+export function BookCard({ book, enhanced = false }: CardProps) {
+  // Read pages
+  const [readPages, setReadPages] = useState<number>(0)
+
+  // Book current status
+  let bookCurrentStatus = book.books_profiles[0].status_id
+
+  // Selected status
+  const [status, setStatus] = useState<String>(bookCurrentStatus.toString());
+
+
+  // All statuses from database
+  const [statuses, setStatuses] = useState<statusesModel[]>([]);
+
+  // Books progress
+  const [booksProgress, setBooksProgress] = useState<books_profiles_progressModel[]>([]);
+  useEffect(() => {
+    let totalReadPages = 0;
+
+    // Get statuses
+    getStatuses().then(setStatuses);
+
+    // Get current book reading dates only if status -> In progress
+    getBookProfileProgress(book.id).then((data) => {
+      setBooksProgress(data);
+
+      setReadPages(Math.round((data.reduce((acc, book) => acc + book.read_pages, 0) / book.total_pages * 100) * 100) / 100)
+    });
+
+
+
+  }, [])
+
+  console.log(readPages)
+
+  const handleStatusChange = (e: String) => {
+    setStatus(e);
+  }
+
+
   return (
     <Card className="w-full max-w-sm">
+
       <CardHeader >
-        <CardTitle className="flex items-center gap-1"><BookTextIcon size={16} />{title}</CardTitle>
+        <CardTitle className="flex items-start gap-1"><Book size={16} />{book.name}</CardTitle>
         <CardDescription>
-          <div className="flex items-center gap-1"><UserIcon size={12} />Book author</div>
-          <div className="flex items-center gap-1"><CalendarDaysIcon size={12} />Book year</div>
+          <div className="flex items-center gap-1"><User size={12} />{book.author}</div>
+          <div className="flex items-center gap-1"><Calendar size={12} />{book.year}</div>
         </CardDescription>
       </CardHeader>
 
-      <CardFooter className="">
-        <CardAction className="text-xs">
-          {enhanced ? (
-            <div className="flex flex-col gap-4">
-              Progress
-              <Progress color={"black"} value={80} className="w-full" />
-              <Collapsible className="flex flex-col gap-2 items-baseline ">
-                <CollapsibleTrigger className="">
-                  <Badge variant={"default"} className="hover:bg-gray-800">Reading dates</Badge>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="flex flex-col gap-2">
-                  <Badge variant={"outline"}>01/01/1990</Badge>
-                  <Badge variant={"outline"}>01/01/1990</Badge>
-                  <Badge variant={"outline"}>01/01/1990</Badge>
-                  <Badge variant={"outline"}>01/01/1990</Badge>
-                  <Badge variant={"outline"}>01/01/1990</Badge>
-                </CollapsibleContent>
-              </Collapsible>
-              <Button className="text-xs">Add date</Button>
-            </div>)
-            : <></>}
+      <CardFooter className="flex flex-col gap-4">
+        <CardAction className="text-xs w-full">
 
+          {/* Enhanced function - Progress + Dates */}
+          {enhanced && (
+            <div className="flex flex-col gap-4 mb-4">
+              <h6>Progress</h6>
+              <div className="flex items-center gap-3 justify-between">
+                <Progress color={"black"} value={readPages} /> {readPages}%
+              </div>
+
+              <Collapsible className="flex flex-col gap-2 items-baseline w-full">
+                <div className="flex w-full  items-center gap-4">
+                  <div className="flex items-center justify-between gap-4 px-2 py-1 rounded-md border w-full">
+                    <h4 className="text-left">
+                      Reading dates
+                    </h4>
+
+                    <CollapsibleTrigger asChild className="">
+                      <Button variant="ghost" size="icon" className="size-6">
+                        <ChevronsUpDown />
+                        <span className="sr-only"></span>
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+
+                  <Button variant="outline" size="icon" className="size-6">
+                    <Plus />
+                    <span className="sr-only"></span>
+                  </Button>
+                </div>
+                <div className="w-full">
+                  <CollapsibleContent className="flex flex-col gap-2">
+                    {booksProgress.map((e) => (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >{formatDate(e.date)}</Badge>))}
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+
+            </div>
+          )}
+
+
+        </CardAction>
+        <CardAction className="w-full">
+          <Select value={status.toString()} onValueChange={handleStatusChange} >
+            <h6>Status</h6>
+            <SelectTrigger className=" text-xs">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent >
+              {statuses.map((e) => (<SelectItem key={e.id} value={e.id.toString()} className="text-xs" >{e.status}</SelectItem>))}
+            </SelectContent>
+          </Select>
+
+          {/* Delete Book */}
           <div className="flex flex-col gap-3 mt-4">
-            <NativeSelect className="text-xs">
-              <NativeSelectOption value="" className="">Status</NativeSelectOption>
-              <NativeSelectOption value="in-progress">In progress</NativeSelectOption>
-              <NativeSelectOption value="completed">Completed</NativeSelectOption>
-              <NativeSelectOption value="not-started">Not started</NativeSelectOption>
-            </NativeSelect>
             <Button className="w-fit text-xs">Delete book</Button>
           </div>
         </CardAction>
