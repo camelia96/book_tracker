@@ -11,6 +11,8 @@ import { SetStateAction, useEffect, useState } from "react";
 import { getStatuses } from "@/actions/statuses";
 import { books_profiles } from "@/generated/prisma/client";
 import { BookWithProfiles } from "@/types/types";
+import { Separator } from "@/components/ui/separator";
+
 import {
   Select,
   SelectContent,
@@ -22,6 +24,7 @@ import { Book, Calendar, ChevronsUpDown, Plus, User } from "lucide-react";
 import { getBookProfileProgress } from "@/actions/books";
 import { IN_PROGRESS_ID } from "@/app/constants/statuses";
 import { Decimal } from "@prisma/client/runtime/client";
+import { SelectSeparator } from "@radix-ui/react-select";
 
 interface CardProps {
   book: BookWithProfiles,
@@ -83,6 +86,7 @@ export function BookCard({ book, enhanced = false }: CardProps) {
         </CardDescription>
       </CardHeader>
 
+
       <CardFooter className="flex flex-col gap-4">
         <CardAction className="text-xs w-full">
 
@@ -116,7 +120,7 @@ export function BookCard({ book, enhanced = false }: CardProps) {
                 </div>
                 <div className="w-full">
                   <CollapsibleContent className="flex flex-col gap-2">
-                    {booksProgress.map((e) => (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >{formatDate(e.date)}</Badge>))}
+                    {booksProgress.map((e) => (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >{formatDate(e.date)} - {e.read_pages} pages</Badge>))}
                   </CollapsibleContent>
                 </div>
               </Collapsible>
@@ -126,6 +130,13 @@ export function BookCard({ book, enhanced = false }: CardProps) {
 
 
         </CardAction>
+
+        <Separator />
+
+        {book.img_url && <div className="flex items-center justify-center"><img src={book.img_url.toString()} alt="Thumbnail" className=" w-40" /></div>}
+
+        <Separator />
+
         <CardAction className="w-full">
           <Select value={status.toString()} onValueChange={handleStatusChange} >
             <h6>Status</h6>
