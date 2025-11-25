@@ -127,9 +127,18 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 tracking-tight;
+
+  }
+  h1 {
+    @apply text-4xl font-semibold
+  }
+  h4, h6 {
+    @apply text-xs
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground ;
+
   }
+  
 }
