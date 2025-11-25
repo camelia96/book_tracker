@@ -1,21 +1,40 @@
+"use client"
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { AddBook } from "@/components/ui/add-book-form-custom";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
+
 import { BookCard } from "@/components/ui/book-card-custom";
 import { Separator } from "@/components/ui/separator";
-
+import { useEffect, useState } from "react";
+import { getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
+import { CarouselCustom } from "@/components/ui/carousel-custom";
+import { BookWithProfiles } from "@/types/types";
+import { COMPLETED_ID, IN_PROGRESS_ID, NOT_STARTED_ID } from "./constants/statuses";
 export default function Home() {
+  // States  
+  const [allBooks, setAllBooks] = useState<BookWithProfiles[]>([]);
+
+  const [notStartedBooks, setNotStartedBooks] = useState<BookWithProfiles[]>([]);
+  const [inProgressBooks, setInProgressBooks] = useState<BookWithProfiles[]>([]);
+  const [completedBooks, setCompletedBooks] = useState<BookWithProfiles[]>([]);
+
+
+  useEffect(() => {
+    // Get books
+    getBooksProfile().then(setAllBooks);
+    // Get not started books
+    getNotStartedBooks(NOT_STARTED_ID).then(setNotStartedBooks)
+    // // Get in progress books
+    getInProgressBooks(IN_PROGRESS_ID).then(setInProgressBooks)
+    // // Get completed books
+    getCompletedBooks(COMPLETED_ID).then(setCompletedBooks)
+
+  }, [])
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-4xl flex-col items-center justify-between py-32 px-16 gap-6 bg-white dark:bg-black sm:items-start">
+      <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-between py-32 px-16 gap-6 bg-white dark:bg-black sm:items-start">
         <h1>Book tracker</h1>
 
         <Separator />
@@ -28,64 +47,23 @@ export default function Home() {
         <Separator />
 
         {/* Add new book */}
-        <AddBook/>
+        <AddBook />
 
         <Separator />
 
         <h2>Books to read</h2>
-        {/* Carousel start */}
-        <Carousel className="w-full">
-          <CarouselContent>
-            <CarouselItem className="basis-1/3">
-              {/* Card start */}
-              <BookCard title={"Book name"}/>
-            </CarouselItem>
-            <CarouselItem className="basis-1/3">
-              {/* Card start */}
-              <BookCard title={"Book name"}/>
-            </CarouselItem>
-          </CarouselContent>
-
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <CarouselCustom books={notStartedBooks} />
 
         <Separator />
-        
+
         <h2>Reading Books</h2>
-        {/* Carousel start */}
-        <Carousel className="w-full">
-          <CarouselContent>
-            <CarouselItem className="basis-1/3">
-              {/* Card start */}
-              <BookCard title={"Book name"} enhanced={true}/>
-            </CarouselItem>
-            <CarouselItem className="basis-1/3">
-              {/* Card start */}
-              <BookCard title={"Book name"} enhanced={true}/>
-            </CarouselItem>
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <CarouselCustom enhanced={true} books={inProgressBooks} />
 
         <Separator />
-        
+
         <h2>Read books</h2>
-        {/* Carousel start */}
-        <Carousel className="w-full">
-          <CarouselContent>
-            <CarouselItem className="basis-1/3">
-              {/* Card start */}
-              <BookCard title={"Book name"}/>
-            </CarouselItem>
-            <CarouselItem className="basis-1/3">
-              <BookCard title={"Book name"}/>
-            </CarouselItem>
-          </CarouselContent>
-          <CarouselNext />
-          <CarouselPrevious />
-        </Carousel>
+        <CarouselCustom books={completedBooks} />
+
 
       </main>
     </div>
