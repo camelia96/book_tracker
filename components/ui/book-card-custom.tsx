@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Book, Calendar, ChevronsUpDown, Plus, User } from "lucide-react";
 import { getBookProfileProgress } from "@/actions/books";
+import { AddReadPagesDate } from "./add-reading-date";
 
 interface CardProps {
   book: BookWithProfiles,
@@ -45,8 +46,6 @@ export function BookCard({ book, enhanced = false }: CardProps) {
   // Books progress
   const [booksProgress, setBooksProgress] = useState<books_profiles_progressModel[]>([]);
   useEffect(() => {
-    let totalReadPages = 0;
-
     // Get statuses
     getStatuses().then(setStatuses);
 
@@ -57,11 +56,8 @@ export function BookCard({ book, enhanced = false }: CardProps) {
       setReadPages(Math.round((data.reduce((acc, book) => acc + book.read_pages, 0) / book.total_pages * 100) * 100) / 100)
     });
 
-
-
   }, [])
 
-  console.log(readPages)
 
   const handleStatusChange = (e: String) => {
     setStatus(e);
@@ -106,10 +102,7 @@ export function BookCard({ book, enhanced = false }: CardProps) {
                     </CollapsibleTrigger>
                   </div>
 
-                  <Button variant="outline" size="icon" className="size-6">
-                    <Plus />
-                    <span className="sr-only"></span>
-                  </Button>
+                  <AddReadPagesDate/>
                 </div>
                 <div className="w-full">
                   <CollapsibleContent className="flex flex-col gap-2">
