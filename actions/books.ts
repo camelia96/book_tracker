@@ -42,7 +42,7 @@ export async function getBooksProfile() {
   return await prisma.books.findMany({
     include: {
       books_profiles: {
-        select: { status_id: true },
+        select: { id: true, status_id: true },
       },
     },
   });
@@ -55,7 +55,7 @@ export async function getBookProfile(bookId: number) {
     },
     include: {
       books_profiles: {
-        select: { status_id: true },
+        select: { id: true, status_id: true },
       },
     },
   });
@@ -76,7 +76,7 @@ export async function getNotStartedBooks(userId: number) {
     include: {
       books_profiles: {
         where: { status_id: NOT_STARTED_ID },
-        select: { status_id: true },
+        select: { id: true, status_id: true },
       },
     },
   });
@@ -97,7 +97,7 @@ export async function getInProgressBooks(userId: number) {
     include: {
       books_profiles: {
         where: { status_id: IN_PROGRESS_ID },
-        select: { status_id: true },
+        select: { id: true, status_id: true },
       },
     },
   });
@@ -118,7 +118,7 @@ export async function getCompletedBooks(userId: number) {
     include: {
       books_profiles: {
         where: { status_id: COMPLETED_ID },
-        select: { status_id: true },
+        select: { id: true, status_id: true },
       },
     },
   });
