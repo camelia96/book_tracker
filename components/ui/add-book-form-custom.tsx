@@ -41,9 +41,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { useEffect, useState } from "react"
+import { categoriesModel } from "@/generated/prisma/models"
+import {  createBook, getCategories } from "@/actions/books"
 
 
-
+// Zod validation
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Book name must be at least 2 characters.",
@@ -54,21 +57,36 @@ const formSchema = z.object({
   /*  year: z.string().min(4, { message: "Enter the correct year format" }).max(4, { message: "Enter the correct year format" }).optional().or(z.literal("")).refine((val) => !isNaN(Number(val)), {
      message: "The value must be numeric",
    }), */
-  year: z.coerce.number<number>().min(1800, { message: "Enter a correct year" }).max(new Date().getFullYear(), { message: "Enter a correct year" }).int({ message: "Enter a correct format" }).or(z.literal("")),
-  total_pages: z.coerce.number<number>({ message: "You must enter a number" }).int({ message: "Enter a correct format" }).positive({ message: "Enter a correct format" }),
-  img_url: z.string().optional(),
-  category: z.string()
+  year: z
+    .coerce
+    .number<number>({ message: "You must enter a number" })
+    .min(1800, { message: "Enter a correct year" })
+    .max(new Date()
+      .getFullYear(), { message: "Enter a correct year" })
+    .int({ message: "Enter a correct format" }),
+  total_pages: z
+    .coerce
+    .number<number>({ message: "You must enter a number" })
+    .int({ message: "Enter a correct format" })
+    .positive({ message: "Enter a correct format" }),
+  img_url: z
+    .string()
+    .optional(),
+  category: z
+    .string({ message: "You must select a category" })
 
 })
 
+
 export function AddBook() {
+  const [categories, setCategories] = useState<categoriesModel[]>([]);
+
   // 1. Define your form.
   const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       author: "",
-      year: "",
     },
   })
 
@@ -77,127 +95,132 @@ export function AddBook() {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values)
+
+    // Add new book
+    createBook(values).then((data) => {console.log(data)})
   }
 
 
+  useEffect(() => {
+    // Get categories
+    getCategories().then(setCategories);
+  }, [])
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline">Add new book</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-4xl">
         <DialogTitle>Add Book</DialogTitle>
         <DialogDescription>Add a new book. You'll have to choose if this is a new book you want to read, a book that you are already reading or a completed book from your selection. Enjoy!</DialogDescription>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit, (errors) => { console.log(errors) })} className="space-y-8">
 
-            {/** Book name */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Book name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Choose a book name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex gap-10">
+              {/** Book name */}
+              <Controller
+                control={form.control}
+                name="name"
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Book name</FieldLabel>
+                    <Input placeholder="Choose a book name" {...field} aria-invalid={fieldState.invalid} />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            {/** Author */}
-            <FormField
-              control={form.control}
-              name="author"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Author</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter the author" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              {/** Author */}
+              <Controller
+                control={form.control}
+                name="author"
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Author</FieldLabel>
+                    <Input placeholder="Enter the author" {...field} aria-invalid={fieldState.invalid} />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </div>
 
-            {/** Year */}
-            <Controller
-              control={form.control}
-              name="year"
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel htmlFor="yearInput">Year</FieldLabel>
-                  <Input aria-invalid={fieldState.invalid} id="yearInput" type="number" placeholder="Enter a year" {...field} />
-                  {fieldState.error && (<FieldError>{fieldState.error.message}</FieldError>)}
-                </Field>
-              )}
-            />
-            {/* <FormField
-              control={form.control}
-              name=""
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Year</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter the year" {...field} type="text"   value={field.value} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.valueAsNumber)}   />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
+            <div className="flex gap-10">
+              {/** Year */}
+              <Controller
+                control={form.control}
+                name="year"
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel htmlFor="yearInput">Year</FieldLabel>
+                    <Input aria-invalid={fieldState.invalid} id="yearInput" type="number" placeholder="Enter a year" {...field} />
+                    {fieldState.error && (<FieldError>{fieldState.error.message}</FieldError>)}
+                  </Field>
+                )}
+              />
 
-            {/** Total pages */}
-            <FormField
-              control={form.control}
-              name="total_pages"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel htmlFor="totalPages">Total pages</FormLabel>
-                  <FormControl>
-                    <Input id="totalPages" aria-invalid={fieldState.invalid} placeholder="Enter the amount of pages the book has" {...field} type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.valueAsNumber)} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+              {/** Total pages */}
+              <Controller
+                control={form.control}
+                name="total_pages"
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel htmlFor="totalPages">Total pages</FieldLabel>
+                    <Input id="totalPages" aria-invalid={fieldState.invalid} placeholder="Enter the amount of pages the book has" {...field} type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </div>
 
             {/** IMG Url */}
-            <FormField
+            <Controller
               control={form.control}
               name="img_url"
               render={({ field, fieldState }) => (
-                <FormItem>
+                <Field>
                   <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter an image URL" {...field} type="string" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  <Input placeholder="Enter an image URL" {...field} type="string" aria-invalid={fieldState.invalid} {...field} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
 
-            <FormField
-              control={form.control}
+            <Controller
               name="category"
+              control={form.control}
               render={({ field, fieldState }) =>
-              (<FormItem>
-                <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Select>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Categories</SelectLabel>
-                        { }
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-              </FormItem>)
+              (<Field
+                orientation="responsive"
+                data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="categorySelect">Category</FieldLabel>
+                <Select name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}>
+                  <SelectTrigger aria-invalid={fieldState.invalid} id="categorySelect" className="w-[180px]">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Select a category</SelectLabel>
+                      {categories.map((c) =>
+                        (<SelectItem key={c.id} value={String(c.id)}>{c.category}</SelectItem>))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>)
               }
             />
             <DialogFooter>
