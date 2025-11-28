@@ -17,9 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Book, Calendar, ChevronsUpDown, Layers, Plus, User } from "lucide-react";
-import { getBookProfileProgress } from "@/actions/books";
+import { getBookProfileProgress } from "@/actions/book_profile_progress";
 import { AddReadPagesDate } from "./add-reading-date";
-import { formatDate } from "@/actions/functions/functions";
+import { formatDate } from "@/functions/functions";
 
 interface CardProps {
   book: BookWithProfiles,
@@ -28,6 +28,7 @@ interface CardProps {
 
 
 export function BookCard({ book, enhanced = false }: CardProps) {
+
   // Read pages
   const [readPages, setReadPages] = useState<number>(0)
 
