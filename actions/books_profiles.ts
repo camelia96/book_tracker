@@ -16,3 +16,16 @@ export async function createBookProfile(userId: number, bookId: number) {
 }
 
 // Read
+
+// Update
+export async function updateBookStatus(
+  rowId: number,
+  newStatusId: number
+) {
+  return await prisma.books_profiles.update({
+    data: {
+      status_id: newStatusId,
+    },
+    where: { id: rowId },
+  });
+}
