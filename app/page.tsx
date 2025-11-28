@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
 import { CarouselCustom } from "@/components/ui/carousel-custom";
 import { BookWithProfiles } from "@/types/types";
-import { COMPLETED_ID, IN_PROGRESS_ID, NOT_STARTED_ID } from "./constants/statuses";
+import { COMPLETED_ID, IN_PROGRESS_ID, NOT_STARTED_ID } from "./constants/constants";
 export default function Home() {
   // States  
   const [allBooks, setAllBooks] = useState<BookWithProfiles[]>([]);
@@ -16,6 +16,7 @@ export default function Home() {
   const [notStartedBooks, setNotStartedBooks] = useState<BookWithProfiles[]>([]);
   const [inProgressBooks, setInProgressBooks] = useState<BookWithProfiles[]>([]);
   const [completedBooks, setCompletedBooks] = useState<BookWithProfiles[]>([]);
+
 
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function Home() {
     getInProgressBooks(IN_PROGRESS_ID).then(setInProgressBooks)
     // // Get completed books
     getCompletedBooks(COMPLETED_ID).then(setCompletedBooks)
+
 
   }, [])
 
