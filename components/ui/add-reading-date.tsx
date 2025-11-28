@@ -1,9 +1,10 @@
 "use client"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, SubmitHandler, Controller } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
+import { BookWithProfiles } from "@/types/types";
+
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import {
   Dialog,
@@ -15,29 +16,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ChevronDownIcon, Plus } from "lucide-react"
-import { Label } from "@radix-ui/react-label"
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover"
-import { useState } from "react"
+import { Plus } from "lucide-react"
 import {
   Field,
-  FieldDescription,
   FieldError,
-  FieldGroup,
   FieldLabel,
-  FieldSet,
 } from "@/components/ui/field"
+import { booksModel } from "@/generated/prisma/models"
+import { createReadingDate } from "@/actions/books";
+import { formatDate } from "@/actions/functions/functions";
 
 
-const formSchema = z.object({
-  pages: /* z.string().min(1, { message: "You must enter how many pages you've read on the selected date" }) */
-    z.number({ message: "You must enter a number" }).int({ message: "Enter the correct format" }).positive({ message: "Enter the correct format" }),
-  date: z.string()
+export function AddReadPagesDate({ bookData, sumReadPages }: { bookData: BookWithProfiles, sumReadPages: number }) {
 
-})
+  // Zod validation
+  const formSchema = z.object({
+    pages: z
+      .coerce
+      .number<number>({ message: "You must enter a number" })
+      .int({ message: "Enter the correct format" })
+      .positive({ message: "Enter the correct format" })
+      .max(bookData.total_pages - sumReadPages, { message: "You can't read more pages than you have left" })
+    ,
+    date: z.string()
+
+  })
 
 
-export function AddReadPagesDate() {
   const {
     register,
     handleSubmit,
@@ -48,17 +53,17 @@ export function AddReadPagesDate() {
   })
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log(data)
+    // Add reading date
+    createReadingDate(bookData.id, data.date, data.pages).then((data) => { console.log(data) })
   }
 
-  // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      pages: 0,
-      date: new Date().toISOString().split("T")[0]
+      date: new Date().toISOString().split("T")[0] 
     },
   })
+
 
 
 
@@ -77,8 +82,7 @@ export function AddReadPagesDate() {
         <DialogTitle>Add new date</DialogTitle>
         <DialogDescription>Here you can add a new date whenever you have read a bunch of pages. Don't forget to enter the total of pages too!</DialogDescription>
 
-        <form onSubmit={form.handleSubmit(onSubmit, (errors) => { console.log(errors) })}>
-
+        <form onSubmit={form.handleSubmit(onSubmit, (errors) => { console.log(errors) })} className="space-y-8">
 
           {/* Pages  */}
           <Controller
@@ -86,8 +90,8 @@ export function AddReadPagesDate() {
             name="pages"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="pages">Total pages</FieldLabel>
-                <Input placeholder="Enter the amount of pages the book has" {...field} type="number" aria-invalid={fieldState.invalid} />
+                <FieldLabel htmlFor="pagesInput">Read pages</FieldLabel>
+                <Input id="pagesInput" placeholder="How many pages have you read?" {...field} type="text" aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
                 {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
               </Field>
             )}
