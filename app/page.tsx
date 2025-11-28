@@ -4,30 +4,54 @@ import Image from "next/image";
 import { AddBook } from "@/components/ui/add-book-form-custom";
 
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
-import { getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
+import { useContext, useEffect, useState } from "react";
+import { getBookProfile, getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
 import { CarouselCustom } from "@/components/ui/carousel-custom";
 import { BookWithProfiles } from "@/types/types";
-import { COMPLETED_ID, IN_PROGRESS_ID, NOT_STARTED_ID } from "./constants/constants";
+import { COMPLETED_ID, fakeCurrentProfile, IN_PROGRESS_ID, NOT_STARTED_ID } from "./constants/constants";
+import { createBookProfile } from "@/actions/books_profiles";
+import { profilesModel } from "@/generated/prisma/models";
+import { getProfiles } from "@/actions/profiles";
+
 export default function Home() {
   // States  
-  const [allBooks, setAllBooks] = useState<BookWithProfiles[]>([]);
+  //const [allBooks, setAllBooks] = useState<BookWithProfiles[]>([]);
 
   const [notStartedBooks, setNotStartedBooks] = useState<BookWithProfiles[]>([]);
   const [inProgressBooks, setInProgressBooks] = useState<BookWithProfiles[]>([]);
   const [completedBooks, setCompletedBooks] = useState<BookWithProfiles[]>([]);
 
+  // Current user
+  const [user, setUser] = useState<profilesModel | null>(null)
 
+  // Callback child -> parent
+  const handleBookCreated = (bookId: number) => {
+    console.log("handling new book..!!", bookId)
+
+
+    getBookProfile(bookId).then((data) => {
+      console.log(data);
+      if (data) {
+        setNotStartedBooks([...notStartedBooks, data])
+      }
+    })
+  }
 
   useEffect(() => {
     // Get books
-    getBooksProfile().then(setAllBooks);
+    //getBooksProfile().then(setAllBooks);
+
     // Get not started books
-    getNotStartedBooks(NOT_STARTED_ID).then(setNotStartedBooks)
+    getNotStartedBooks(fakeCurrentProfile).then(setNotStartedBooks)
     // // Get in progress books
-    getInProgressBooks(IN_PROGRESS_ID).then(setInProgressBooks)
+    getInProgressBooks(fakeCurrentProfile).then(setInProgressBooks)
     // // Get completed books
-    getCompletedBooks(COMPLETED_ID).then(setCompletedBooks)
+    getCompletedBooks(fakeCurrentProfile).then(setCompletedBooks)
+
+    /** Get books from profile */
+
+
+
 
 
   }, [])
@@ -47,7 +71,7 @@ export default function Home() {
         <Separator />
 
         {/* Add new book */}
-        <AddBook />
+        <AddBook user={fakeCurrentProfile} onBookCreated={handleBookCreated} />
 
         <Separator />
 
