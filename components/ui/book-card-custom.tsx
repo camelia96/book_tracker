@@ -20,6 +20,7 @@ import { Book, Calendar, ChevronsUpDown, Layers, Plus, User } from "lucide-react
 import { getBookProfileProgress } from "@/actions/book_profile_progress";
 import { AddReadPagesDate } from "./add-reading-date";
 import { formatDate } from "@/functions/functions";
+import { updateBookStatus } from "@/actions/books_profiles";
 
 interface CardProps {
   book: BookWithProfiles,
@@ -70,8 +71,14 @@ export function BookCard({ book, enhanced = false }: CardProps) {
   }, [])
 
 
-  const handleStatusChange = (e: String) => {
+  const handleStatusChange = (e: string) => {
+    // Change select status
     setStatus(e);
+
+    // Update select on db
+    updateBookStatus(book.books_profiles[0].id, parseInt(e)).then((data) => {console.log("Update book status", data)});
+
+
   }
 
 
