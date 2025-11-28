@@ -23,8 +23,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { booksModel } from "@/generated/prisma/models"
-import { createReadingDate } from "@/actions/books";
-import { formatDate } from "@/actions/functions/functions";
+import { createReadingDate } from "@/actions/book_profile_progress";
+import { formatDate } from "@/functions/functions";
 
 
 export function AddReadPagesDate({ bookData, sumReadPages }: { bookData: BookWithProfiles, sumReadPages: number }) {
