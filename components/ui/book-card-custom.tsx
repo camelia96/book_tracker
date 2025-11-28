@@ -16,18 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Book, Calendar, ChevronsUpDown, Plus, User } from "lucide-react";
+import { Book, Calendar, ChevronsUpDown, Layers, Plus, User } from "lucide-react";
 import { getBookProfileProgress } from "@/actions/books";
 import { AddReadPagesDate } from "./add-reading-date";
+import { formatDate } from "@/actions/functions/functions";
 
 interface CardProps {
   book: BookWithProfiles,
   enhanced?: boolean
 }
 
-function formatDate(date: Date) {
-  return date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear();
-}
 
 export function BookCard({ book, enhanced = false }: CardProps) {
   // Read pages
@@ -45,7 +43,12 @@ export function BookCard({ book, enhanced = false }: CardProps) {
 
   // Books progress
   const [booksProgress, setBooksProgress] = useState<books_profiles_progressModel[]>([]);
+
+  // Sum of all read pages
+  const [sumReadPages, setSumReadPages] = useState<number>(0);
+
   useEffect(() => {
+    let currentReadPages = 0;
     // Get statuses
     getStatuses().then(setStatuses);
 
@@ -53,7 +56,14 @@ export function BookCard({ book, enhanced = false }: CardProps) {
     getBookProfileProgress(book.id).then((data) => {
       setBooksProgress(data);
 
-      setReadPages(Math.round((data.reduce((acc, book) => acc + book.read_pages, 0) / book.total_pages * 100) * 100) / 100)
+      // Calculate total read pages so far
+      currentReadPages = (data.reduce((acc, book) => acc + book.read_pages, 0));
+
+      // Set total read pages so far (int)
+      setSumReadPages(currentReadPages);
+
+      // Set progress total read pages so far (float)
+      setReadPages(Math.round(currentReadPages / book.total_pages * 100 * 100) / 100)
     });
 
   }, [])
@@ -72,6 +82,8 @@ export function BookCard({ book, enhanced = false }: CardProps) {
         <CardDescription>
           <div className="flex items-center gap-1"><User size={12} />{book.author}</div>
           <div className="flex items-center gap-1"><Calendar size={12} />{book.year}</div>
+          <div className="flex items-center gap-1"><Layers size={12} />{book.total_pages} pages</div>
+
         </CardDescription>
       </CardHeader>
 
@@ -102,11 +114,11 @@ export function BookCard({ book, enhanced = false }: CardProps) {
                     </CollapsibleTrigger>
                   </div>
 
-                  <AddReadPagesDate/>
+                  <AddReadPagesDate bookData={book} sumReadPages={sumReadPages} />
                 </div>
                 <div className="w-full">
                   <CollapsibleContent className="flex flex-col gap-2">
-                    {booksProgress.map((e) => (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >{formatDate(e.date)} - {e.read_pages} pages</Badge>))}
+                    {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) => (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >{formatDate(e.date)} - {e.read_pages} pages</Badge>))}
                   </CollapsibleContent>
                 </div>
               </Collapsible>
