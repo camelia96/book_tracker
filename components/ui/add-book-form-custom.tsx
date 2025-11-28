@@ -41,9 +41,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { categoriesModel } from "@/generated/prisma/models"
-import {  createBook, getCategories } from "@/actions/books"
+import { createBook, getBookProfile, getBooksProfile } from "@/actions/books"
+import { getCategories } from "@/actions/categories"
+import { createBookProfile } from "@/actions/books_profiles"
+import { CallbackFunction } from "@/types/types"
 
 
 // Zod validation
@@ -78,7 +81,9 @@ const formSchema = z.object({
 })
 
 
-export function AddBook() {
+export function AddBook({ user, onBookCreated }: { user: number, onBookCreated: CallbackFunction }) {
+
+
   const [categories, setCategories] = useState<categoriesModel[]>([]);
 
   // 1. Define your form.
@@ -94,10 +99,20 @@ export function AddBook() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values)
+    //console.log(values)
 
     // Add new book
-    createBook(values).then((data) => {console.log(data)})
+    createBook(values).then((data) => {
+      //console.log("Create book ", data)
+
+      // Add created book to current profile
+      createBookProfile(user, data.id).then((data) => {
+        //console.log("Create book profile", data)
+        onBookCreated(data.book_id);
+
+      })
+    })
+
   }
 
 
@@ -157,7 +172,7 @@ export function AddBook() {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel htmlFor="yearInput">Year</FieldLabel>
-                    <Input aria-invalid={fieldState.invalid} id="yearInput" type="number" placeholder="Enter a year" {...field} />
+                    <Input aria-invalid={fieldState.invalid} id="yearInput" type="number" placeholder="Enter a year" {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
                     {fieldState.error && (<FieldError>{fieldState.error.message}</FieldError>)}
                   </Field>
                 )}
