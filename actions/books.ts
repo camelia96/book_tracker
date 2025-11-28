@@ -1,6 +1,10 @@
 "use server";
 
-import { booksModel } from "@/generated/prisma/models";
+import {
+  COMPLETED_ID,
+  IN_PROGRESS_ID,
+  NOT_STARTED_ID,
+} from "@/app/constants/constants";
 import { prisma } from "../lib/prisma";
 
 // Create
@@ -31,20 +35,6 @@ export async function createBook({
   });
 }
 
-export async function createReadingDate(
-  bookId: number,
-  date: string,
-  readPages: number
-) {
-  return await prisma.books_profiles_progress.create({
-    data: {
-      book_profile_id: bookId,
-      date: new Date(date),
-      read_pages: readPages,
-    },
-  });
-}
-
 // Read
 export async function getBooksProfile() {
   // Fetch all books from database
@@ -58,73 +48,78 @@ export async function getBooksProfile() {
   });
 }
 
-export async function getNotStartedBooks(id: number) {
+export async function getBookProfile(bookId: number) {
+  return await prisma.books.findFirst({
+    where: {
+      id: bookId,
+    },
+    include: {
+      books_profiles: {
+        select: { status_id: true },
+      },
+    },
+  });
+}
+
+export async function getNotStartedBooks(userId: number) {
   // Fetch all books with status: not started
   return await prisma.books.findMany({
     where: {
       books_profiles: {
         some: {
           // Not started status ID
-          status_id: id,
+          status_id: NOT_STARTED_ID,
+          profile_id: userId,
         },
       },
     },
     include: {
       books_profiles: {
-        where: { status_id: id },
+        where: { status_id: NOT_STARTED_ID },
         select: { status_id: true },
       },
     },
   });
 }
 
-export async function getInProgressBooks(id: number) {
+export async function getInProgressBooks(userId: number) {
   // Fetch all books with status: in progress
   return await prisma.books.findMany({
     where: {
       books_profiles: {
         some: {
           // In progress status ID
-          status_id: id,
+          status_id: IN_PROGRESS_ID,
+          profile_id: userId,
         },
       },
     },
     include: {
       books_profiles: {
-        where: { status_id: id },
+        where: { status_id: IN_PROGRESS_ID },
         select: { status_id: true },
       },
     },
   });
 }
 
-export async function getCompletedBooks(id: number) {
+export async function getCompletedBooks(userId: number) {
   // Fetch all books with status: completed
   return await prisma.books.findMany({
     where: {
       books_profiles: {
         some: {
-          status_id: id,
+          // Completed status ID
+          status_id: COMPLETED_ID,
+          profile_id: userId,
         },
       },
     },
     include: {
       books_profiles: {
-        where: { status_id: id },
+        where: { status_id: COMPLETED_ID },
         select: { status_id: true },
       },
     },
   });
-}
-
-export async function getBookProfileProgress(id: number) {
-  return await prisma.books_profiles_progress.findMany({
-    where: {
-      book_profile_id: id,
-    },
-  });
-}
-
-export async function getCategories() {
-  return await prisma.categories.findMany();
 }
