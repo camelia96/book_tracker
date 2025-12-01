@@ -4,9 +4,9 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { Badge } from "@/components/ui/badge";
 import { statusesModel, books_profiles_progressModel } from "@/generated/prisma/models";
-import { useEffect, useState } from "react";
+import { MouseEvent, MouseEventHandler, useEffect, useState } from "react";
 import { getStatuses } from "@/actions/statuses";
-import { BookWithProfiles } from "@/types/types";
+import { BookWithProfiles, UpdateStatusCallbackFunction } from "@/app/types/types";
 import { Separator } from "@/components/ui/separator";
 
 import {
@@ -16,19 +16,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Book, Calendar, ChevronsUpDown, Layers, Plus, User } from "lucide-react";
-import { getBookProfileProgress } from "@/actions/book_profile_progress";
+import { Book, Calendar, ChevronsUpDown, Layers, Plus, User, X } from "lucide-react";
+import { deleteAllReadingDates, deleteReadingDate, getBookProfileProgress } from "@/actions/book_profile_progress";
 import { AddReadPagesDate } from "./add-reading-date";
-import { formatDate } from "@/functions/functions";
-import { updateBookStatus } from "@/actions/books_profiles";
+import { formatDate } from "@/app/functions/functions";
+import { deleteBookProfile, updateBookStatus } from "@/actions/books_profiles";
+import { deleteBook, getBookProfile } from "@/actions/books";
+import { STATUSES_IDS } from "@/app/constants/constants";
 
 interface CardProps {
   book: BookWithProfiles,
-  enhanced?: boolean
+  enhanced?: boolean,
+  onStatusChange: UpdateStatusCallbackFunction
 }
 
+function calculateBookProgress(data: books_profiles_progressModel[], book: BookWithProfiles) {
+  // Calculate total read pages so far
+  const currentReadPages = data.reduce((acc, book) => acc + book.read_pages, 0);
 
-export function BookCard({ book, enhanced = false }: CardProps) {
+  return { sum: currentReadPages, progress: Math.round(currentReadPages / book.total_pages * 100 * 100) / 100 }
+}
+
+export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) {
 
   // Read pages
   const [readPages, setReadPages] = useState<number>(0)
@@ -49,23 +58,20 @@ export function BookCard({ book, enhanced = false }: CardProps) {
   // Sum of all read pages
   const [sumReadPages, setSumReadPages] = useState<number>(0);
 
+
   useEffect(() => {
-    let currentReadPages = 0;
     // Get statuses
     getStatuses().then(setStatuses);
 
     // Get current book reading dates only if status -> In progress
     getBookProfileProgress(book.id).then((data) => {
+
       setBooksProgress(data);
 
-      // Calculate total read pages so far
-      currentReadPages = (data.reduce((acc, book) => acc + book.read_pages, 0));
-
       // Set total read pages so far (int)
-      setSumReadPages(currentReadPages);
-
+      setSumReadPages(calculateBookProgress(data, book).sum);
       // Set progress total read pages so far (float)
-      setReadPages(Math.round(currentReadPages / book.total_pages * 100 * 100) / 100)
+      setReadPages(calculateBookProgress(data, book).progress)
     });
 
   }, [])
@@ -76,12 +82,77 @@ export function BookCard({ book, enhanced = false }: CardProps) {
     setStatus(e);
 
     // Update select on db
-    updateBookStatus(book.books_profiles[0].id, parseInt(e)).then((data) => {console.log("Update book status", data)});
+    updateBookStatus(book.books_profiles[0].id, parseInt(e)).then((data) => {
+      console.log("Update book status", data)
+
+      // Get and return updated book
+      getBookProfile(data.book_id).then((data) => {
+        // Update carousel(parent) books(childs)
+        if (data) {
+          // Get callback data from book card
+          onStatusChange(data);
+
+
+
+
+        }
+      })
+
+    });
+
+
 
 
   }
 
+  // Doesn't make sense to delete a book - once it's in, it's either one of the three statuses
+  /*   const handleDeleteBook = (e: MouseEvent<HTMLButtonElement>) => {
+      const bookProfileId = book.books_profiles[0].id;
+      // Delete book
+  
+      // 1. Delete all reading dates from book
+      deleteAllReadingDates(bookProfileId).then((data) => {
+  
+        // 2. Delete the book association w/ profile
+        deleteBookProfile(bookProfileId).then((data) => {
+          deleteBook(book.id)
+        })
+  
+        // 3. Delete book
+      })
+  
+    } */
 
+  const handleReadingDateCreated = (readingDate: books_profiles_progressModel) => {
+    const addedDates = [...booksProgress, readingDate];
+    setBooksProgress(addedDates)
+
+    // Set total read pages so far (int)
+    setSumReadPages(calculateBookProgress(addedDates, book).sum);
+    // Set progress total read pages so far (float)
+    setReadPages(calculateBookProgress(addedDates, book).progress)
+
+
+  }
+
+  const handleDeleteReadingDate = (id: number) => {
+    // Delete reading date
+    deleteReadingDate(id).then((data) => {
+      console.log(data)
+
+      const filteredDates = booksProgress.filter((b) => b.id !== id);
+
+      // Set new reading dates
+      setBooksProgress(filteredDates)
+
+
+
+      // Set total read pages so far (int)
+      setSumReadPages(calculateBookProgress(filteredDates, book).sum);
+      // Set progress total read pages so far (float)
+      setReadPages(calculateBookProgress(filteredDates, book).progress)
+    })
+  }
   return (
     <Card className="w-full max-w-sm">
 
@@ -122,11 +193,17 @@ export function BookCard({ book, enhanced = false }: CardProps) {
                     </CollapsibleTrigger>
                   </div>
 
-                  <AddReadPagesDate bookData={book} sumReadPages={sumReadPages} />
+                  <AddReadPagesDate bookData={book} sumReadPages={sumReadPages} onReadingDateCreated={handleReadingDateCreated} />
                 </div>
                 <div className="w-full">
                   <CollapsibleContent className="flex flex-col gap-2">
-                    {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) => (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >{formatDate(e.date)} - {e.read_pages} pages</Badge>))}
+                    {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) =>
+                    (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >
+                      {formatDate(e.date)} - {e.read_pages} pages
+                      <Button variant="ghost" size="icon" className="size-6" onClick={() => handleDeleteReadingDate(e.id)}>
+                        <X />
+                      </Button>
+                    </Badge>))}
                   </CollapsibleContent>
                 </div>
               </Collapsible>
@@ -156,8 +233,8 @@ export function BookCard({ book, enhanced = false }: CardProps) {
 
           {/* Delete Book */}
           <div className="flex flex-col gap-3 mt-4">
-            <Button className="w-fit text-xs">Delete book</Button>
-          </div>
+            {/*             <Button className="w-fit text-xs" onClick={handleDeleteBook}>Delete book</Button>
+ */}          </div>
         </CardAction>
       </CardFooter>
     </Card>
