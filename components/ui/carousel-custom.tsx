@@ -16,14 +16,21 @@ interface CarouselCustomProps {
 
 export function CarouselCustom({ books, enhanced = false, onBookStatusChange }: CarouselCustomProps) {
 
-    
+
     {/* Carousel start */ }
     return (<Carousel className="w-full">
         <CarouselContent>
-            {books.map((e) =>
-            (<CarouselItem key={e.id} className="basis-1/3">
-                <BookCard book={e} enhanced={enhanced} onStatusChange={onBookStatusChange} />
-            </CarouselItem>))}
+            {books.length == 0
+                ? (<CarouselItem>
+                    <p className="text-gray-500">No books in this section</p>
+                </CarouselItem>)
+                : (<>
+                    {books.map((e) =>
+                    (<CarouselItem key={e.id} className="basis-1/3">
+                        <BookCard book={e} enhanced={enhanced} onStatusChange={onBookStatusChange} />
+                    </CarouselItem>))}
+                </>)
+            }
 
         </CarouselContent>
         <CarouselNext />
