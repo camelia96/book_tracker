@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
-import { BookWithProfiles } from "@/types/types";
+import { AddReadingDateCallbackFunction, BookWithProfiles } from "@/app/types/types";
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,16 +19,20 @@ import {
 import { Plus } from "lucide-react"
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldLabel,
 } from "@/components/ui/field"
 import { booksModel } from "@/generated/prisma/models"
 import { createReadingDate } from "@/actions/book_profile_progress";
-import { formatDate } from "@/functions/functions";
+import { formatDate } from "@/app/functions/functions";
 
+interface AddReadingDateDialogProps {
+  bookData: BookWithProfiles, sumReadPages: number, onReadingDateCreated: AddReadingDateCallbackFunction
+}
 
-export function AddReadPagesDate({ bookData, sumReadPages }: { bookData: BookWithProfiles, sumReadPages: number }) {
-
+export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated }: AddReadingDateDialogProps) {
+  let leftPagesToRead = bookData.total_pages - sumReadPages;
   // Zod validation
   const formSchema = z.object({
     pages: z
@@ -36,31 +40,27 @@ export function AddReadPagesDate({ bookData, sumReadPages }: { bookData: BookWit
       .number<number>({ message: "You must enter a number" })
       .int({ message: "Enter the correct format" })
       .positive({ message: "Enter the correct format" })
-      .max(bookData.total_pages - sumReadPages, { message: "You can't read more pages than you have left" })
+      .max(leftPagesToRead, { message: "You can't read more pages than you have left" })
     ,
     date: z.string()
 
   })
 
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema)
-  })
-
   function onSubmit(data: z.infer<typeof formSchema>) {
     // Add reading date
-    createReadingDate(bookData.id, data.date, data.pages).then((data) => { console.log(data) })
+    createReadingDate(bookData.id, data.date, data.pages).then((data) => {
+      console.log(data);
+      // Pass data to parent
+      onReadingDateCreated(data)
+    })
+
   }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: new Date().toISOString().split("T")[0] 
+      date: new Date().toISOString().split("T")[0]
     },
   })
 
@@ -93,6 +93,7 @@ export function AddReadPagesDate({ bookData, sumReadPages }: { bookData: BookWit
                 <FieldLabel htmlFor="pagesInput">Read pages</FieldLabel>
                 <Input id="pagesInput" placeholder="How many pages have you read?" {...field} type="text" aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
                 {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
+                <FieldDescription>You have {leftPagesToRead} pages left</FieldDescription>
               </Field>
             )}
           />
