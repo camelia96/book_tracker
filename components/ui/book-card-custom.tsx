@@ -1,14 +1,13 @@
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { Badge } from "@/components/ui/badge";
 import { statusesModel, books_profiles_progressModel } from "@/generated/prisma/models";
-import { MouseEvent, MouseEventHandler, useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { getStatuses } from "@/actions/statuses";
-import { BookWithProfiles, UpdateStatusCallbackFunction } from "@/app/types/types";
+import { BookWithProfiles } from "@/app/types";
 import { Separator } from "@/components/ui/separator";
-
 import {
   Select,
   SelectContent,
@@ -22,13 +21,22 @@ import { AddReadPagesDate } from "./add-reading-date";
 import { formatDate } from "@/app/functions/functions";
 import { deleteBookProfile, updateBookStatus } from "@/actions/books_profiles";
 import { deleteBook, getBookProfile } from "@/actions/books";
-import { STATUSES_IDS } from "@/app/constants/constants";
 
-interface CardProps {
-  book: BookWithProfiles,
-  enhanced?: boolean,
-  onStatusChange: UpdateStatusCallbackFunction
-}
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { SingleBookProps } from "@/app/types";
+import { AlertDialogCustom } from "./alert-dialog-custom";
+import { cn } from "@/lib/utils";
+
 
 function calculateBookProgress(data: books_profiles_progressModel[], book: BookWithProfiles) {
   // Calculate total read pages so far
@@ -37,7 +45,7 @@ function calculateBookProgress(data: books_profiles_progressModel[], book: BookW
   return { sum: currentReadPages, progress: Math.round(currentReadPages / book.total_pages * 100 * 100) / 100 }
 }
 
-export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) {
+export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook, }: SingleBookProps) {
 
   // Read pages
   const [readPages, setReadPages] = useState<number>(0)
@@ -64,7 +72,7 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
     getStatuses().then(setStatuses);
 
     // Get current book reading dates only if status -> In progress
-    getBookProfileProgress(book.id).then((data) => {
+    getBookProfileProgress(book.books_profiles[0].id).then((data) => {
 
       setBooksProgress(data);
 
@@ -92,9 +100,6 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
           // Get callback data from book card
           onStatusChange(data);
 
-
-
-
         }
       })
 
@@ -106,22 +111,27 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
   }
 
   // Doesn't make sense to delete a book - once it's in, it's either one of the three statuses
-  /*   const handleDeleteBook = (e: MouseEvent<HTMLButtonElement>) => {
-      const bookProfileId = book.books_profiles[0].id;
-      // Delete book
-  
-      // 1. Delete all reading dates from book
-      deleteAllReadingDates(bookProfileId).then((data) => {
-  
-        // 2. Delete the book association w/ profile
-        deleteBookProfile(bookProfileId).then((data) => {
-          deleteBook(book.id)
-        })
-  
+  const handleDeleteBook = () => {
+    const bookProfileId = book.books_profiles[0].id;
+    // Delete book
+
+    // 1. Delete all reading dates from book
+    deleteAllReadingDates(bookProfileId).then((data) => {
+
+      // 2. Delete the book association w/ profile
+      deleteBookProfile(bookProfileId).then((data) => {
         // 3. Delete book
+        deleteBook(book.id).then((data) => {
+          console.log(data)
+          // Callback to main page
+          onDeleteBook(data)
+        });
+
       })
-  
-    } */
+
+    })
+
+  }
 
   const handleReadingDateCreated = (readingDate: books_profiles_progressModel) => {
     const addedDates = [...booksProgress, readingDate];
@@ -153,9 +163,12 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
       setReadPages(calculateBookProgress(filteredDates, book).progress)
     })
   }
+
+
   return (
     <Card className="w-full max-w-sm">
 
+      {/** Book data */}
       <CardHeader >
         <CardTitle className="flex items-start gap-1"><Book size={16} />{book.name}</CardTitle>
         <CardDescription>
@@ -170,15 +183,18 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
       <CardFooter className="flex flex-col gap-4">
         <CardAction className="text-xs w-full">
 
-          {/* Enhanced function - Progress + Dates */}
+          {/* Enhanced function - Progress + Dates - Enhanced only for books in progress*/}
           {enhanced && (
             <div className="flex flex-col gap-4 mb-4">
               <h6>Progress</h6>
               <div className="flex items-center gap-3 justify-between">
                 <Progress color={"black"} value={readPages} /> {readPages}%
               </div>
+              {readPages === 100 ? <p>You've reached 100% progress. Consider changing the current status to completed!</p> : <></>}
 
               <Collapsible className="flex flex-col gap-2 items-baseline w-full">
+
+                {/** Reading dates opening button */}
                 <div className="flex w-full  items-center gap-4">
                   <div className="flex items-center justify-between gap-4 px-2 py-1 rounded-md border w-full">
                     <h4 className="text-left">
@@ -195,6 +211,8 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
 
                   <AddReadPagesDate bookData={book} sumReadPages={sumReadPages} onReadingDateCreated={handleReadingDateCreated} />
                 </div>
+
+                {/** Show reading dates */}
                 <div className="w-full">
                   <CollapsibleContent className="flex flex-col gap-2">
                     {booksProgress.length == 0 ?
@@ -204,11 +222,18 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
                       </div>)
                       : (<div>
                         {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) =>
-                        (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >
-                          {formatDate(e.date)} - {e.read_pages} pages
-                          <Button variant="ghost" size="icon" className="size-6" onClick={() => handleDeleteReadingDate(e.id)}>
-                            <X />
-                          </Button>
+                        (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal flex " >
+                          {e.read_pages} pages - {formatDate(e.date)}
+
+                          {/* Alert Dialog - Confirm deleting reading date */}
+                          <AlertDialogCustom
+                            description="This action cannot be undone. This will permanently delete the reading date. You can always add it again."
+                            trigger={<X />}
+                            action="Delete"
+                            handle={() => handleDeleteReadingDate(e.id)}
+                          />
+
+
                         </Badge>))}
                       </div>)}
                   </CollapsibleContent>
@@ -223,16 +248,25 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
 
         <Separator />
 
+        {/** Book image */}
         {book.img_url ?
           (<div className="flex items-center justify-center"><img src={book.img_url.toString()} alt="Thumbnail" className=" w-40" /></div>)
           : <p className=" text-gray-500">No image available</p>}
 
         <Separator />
 
+
+        {/** Book status */}
         <CardAction className="w-full">
           <Select value={status.toString()} onValueChange={handleStatusChange} >
             <h6>Status</h6>
-            <SelectTrigger className=" text-xs">
+            <SelectTrigger
+              className={`
+              text-xs 
+              
+            ${status == '3' ? 'border-border-success bg-bg-success text-text-success '
+                  : status == '2' ? 'border-border-warning bg-bg-warning text-text-warning '
+                    : 'border-border-info bg-bg-info text-text-info '}`}>
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent >
@@ -242,8 +276,13 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
 
           {/* Delete Book */}
           <div className="flex flex-col gap-3 mt-4">
-            {/*             <Button className="w-fit text-xs" onClick={handleDeleteBook}>Delete book</Button>
- */}          </div>
+            {/* Alert Dialog - Confirm deleting reading date */}
+            <AlertDialogCustom
+              description="This action cannot be undone. This will permanently delete the book from the database."
+              trigger={(<div className={cn(buttonVariants({ variant: "default" })) + ` text-xs`}>Delete book</div>)}
+              action="Delete"
+              handle={handleDeleteBook} />
+          </div>
         </CardAction>
       </CardFooter>
     </Card>
