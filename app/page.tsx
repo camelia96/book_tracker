@@ -7,10 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { useContext, useEffect, useState } from "react";
 import { getBookProfile, getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
 import { CarouselCustom } from "@/components/ui/carousel-custom";
-import { BookWithProfiles } from "@/app/types/types";
+import { BookWithProfiles } from "@/app/types";
 import { STATUSES_IDS, fakeCurrentProfile } from "./constants/constants";
 import { createBookProfile } from "@/actions/books_profiles";
-import { profilesModel } from "@/generated/prisma/models";
+import { booksModel, profilesModel } from "@/generated/prisma/models";
 import { getProfiles } from "@/actions/profiles";
 
 export default function Home() {
@@ -60,6 +60,14 @@ export default function Home() {
 
     }
   }
+
+  const handleDeleteBook = (deletedBook: booksModel) => {
+    if (notStartedBooks.find(b => b.id == deletedBook.id)) setNotStartedBooks(notStartedBooks.filter(b => b.id !== deletedBook.id))
+    if (inProgressBooks.find(b => b.id == deletedBook.id)) setInProgressBooks(inProgressBooks.filter(b => b.id !== deletedBook.id))
+    if (completedBooks.find(b => b.id == deletedBook.id)) setCompletedBooks(completedBooks.filter(b => b.id !== deletedBook.id))
+  }
+
+
   useEffect(() => {
     // Get books
     getBooksProfile(fakeCurrentProfile).then(
@@ -108,17 +116,17 @@ export default function Home() {
         <Separator />
 
         <h2>Books to read</h2>
-        <CarouselCustom books={notStartedBooks} onBookStatusChange={handleStatusUpdate} />
+        <CarouselCustom books={notStartedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
         <Separator />
 
         <h2>Reading Books</h2>
-        <CarouselCustom enhanced={true} books={inProgressBooks} onBookStatusChange={handleStatusUpdate} />
+        <CarouselCustom enhanced={true} books={inProgressBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
         <Separator />
 
         <h2>Read books</h2>
-        <CarouselCustom books={completedBooks} onBookStatusChange={handleStatusUpdate} />
+        <CarouselCustom books={completedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
 
       </main>
