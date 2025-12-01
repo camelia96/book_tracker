@@ -46,7 +46,7 @@ import { categoriesModel } from "@/generated/prisma/models"
 import { createBook, getBookProfile, getBooksProfile } from "@/actions/books"
 import { getCategories } from "@/actions/categories"
 import { createBookProfile } from "@/actions/books_profiles"
-import { CallbackFunction } from "@/types/types"
+import { AddBookCallbackFunction } from "@/app/types/types"
 
 
 // Zod validation
@@ -80,8 +80,12 @@ const formSchema = z.object({
 
 })
 
+interface AddBookDialogProps {
+  user: number, onBookCreated: AddBookCallbackFunction
+}
 
-export function AddBook({ user, onBookCreated }: { user: number, onBookCreated: CallbackFunction }) {
+
+export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
 
 
   const [categories, setCategories] = useState<categoriesModel[]>([]);
