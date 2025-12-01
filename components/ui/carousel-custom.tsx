@@ -6,16 +6,10 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel"
 import { BookCard } from "./book-card-custom";
-import { BookWithProfiles, UpdateStatusCallbackFunction } from "@/app/types/types";
+import { ListBookProps } from "@/app/types";
 
-interface CarouselCustomProps {
-    books: BookWithProfiles[];
-    enhanced?: boolean,
-    onBookStatusChange: UpdateStatusCallbackFunction
-}
 
-export function CarouselCustom({ books, enhanced = false, onBookStatusChange }: CarouselCustomProps) {
-
+export function CarouselCustom({ books, enhanced = false, onStatusChange, onDeleteBook }: ListBookProps) {
 
     {/* Carousel start */ }
     return (<Carousel className="w-full">
@@ -27,7 +21,7 @@ export function CarouselCustom({ books, enhanced = false, onBookStatusChange }: 
                 : (<>
                     {books.map((e) =>
                     (<CarouselItem key={e.id} className="basis-1/3">
-                        <BookCard book={e} enhanced={enhanced} onStatusChange={onBookStatusChange} />
+                        <BookCard book={e} enhanced={enhanced} onStatusChange={onStatusChange} onDeleteBook={onDeleteBook}/>
                     </CarouselItem>))}
                 </>)
             }
