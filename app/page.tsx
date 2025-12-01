@@ -7,8 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { useContext, useEffect, useState } from "react";
 import { getBookProfile, getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
 import { CarouselCustom } from "@/components/ui/carousel-custom";
-import { BookWithProfiles } from "@/types/types";
-import { COMPLETED_ID, fakeCurrentProfile, IN_PROGRESS_ID, NOT_STARTED_ID } from "./constants/constants";
+import { BookWithProfiles } from "@/app/types/types";
+import { STATUSES_IDS, fakeCurrentProfile } from "./constants/constants";
 import { createBookProfile } from "@/actions/books_profiles";
 import { profilesModel } from "@/generated/prisma/models";
 import { getProfiles } from "@/actions/profiles";
@@ -24,12 +24,11 @@ export default function Home() {
   // Current user
   const [user, setUser] = useState<profilesModel | null>(null)
 
-  // Callback child -> parent
-  const handleBookCreated = (bookId: number) => {
-    console.log("handling new book..!!", bookId)
+  // Callbacks
+  const handleBookCreated = (newBookId: number) => {
 
-
-    getBookProfile(bookId).then((data) => {
+    // Update new book on carousel - not started because by default it creates not started
+    getBookProfile(newBookId).then((data) => {
       console.log(data);
       if (data) {
         setNotStartedBooks([...notStartedBooks, data])
@@ -37,16 +36,49 @@ export default function Home() {
     })
   }
 
+
+  const handleStatusUpdate = (updatedBook: BookWithProfiles) => {
+    setNotStartedBooks(notStartedBooks.filter(b => b.id !== updatedBook.id))
+    setInProgressBooks(inProgressBooks.filter(b => b.id !== updatedBook.id))
+    setCompletedBooks(completedBooks.filter(b => b.id !== updatedBook.id))
+
+
+    // Save updated book status id
+    const updatedStatusId = updatedBook.books_profiles[0].status_id;
+
+
+    // Add updated book to equivalent state
+    if (updatedStatusId === STATUSES_IDS.not_started) {
+      //
+      setNotStartedBooks([...notStartedBooks, updatedBook])
+      console.log("new not started books", notStartedBooks)
+    } else if (updatedStatusId === STATUSES_IDS.in_progress) {
+      setInProgressBooks([...inProgressBooks, updatedBook])
+
+    } else if (updatedStatusId === STATUSES_IDS.completed) {
+      setCompletedBooks([...completedBooks, updatedBook])
+
+    }
+  }
   useEffect(() => {
     // Get books
-    //getBooksProfile().then(setAllBooks);
+    getBooksProfile(fakeCurrentProfile).then(
+      (data) => {
+        const allProfileBooks: BookWithProfiles[] = data;
 
-    // Get not started books
+        // Filter and set books by status
+        setNotStartedBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.not_started));
+        setInProgressBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.in_progress));
+        setCompletedBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.completed));
+      }
+    );
+
+    /* // Get not started books
     getNotStartedBooks(fakeCurrentProfile).then(setNotStartedBooks)
     // // Get in progress books
     getInProgressBooks(fakeCurrentProfile).then(setInProgressBooks)
     // // Get completed books
-    getCompletedBooks(fakeCurrentProfile).then(setCompletedBooks)
+    getCompletedBooks(fakeCurrentProfile).then(setCompletedBooks) */
 
     /** Get books from profile */
 
@@ -76,17 +108,17 @@ export default function Home() {
         <Separator />
 
         <h2>Books to read</h2>
-        <CarouselCustom books={notStartedBooks} />
+        <CarouselCustom books={notStartedBooks} onBookStatusChange={handleStatusUpdate} />
 
         <Separator />
 
         <h2>Reading Books</h2>
-        <CarouselCustom enhanced={true} books={inProgressBooks} />
+        <CarouselCustom enhanced={true} books={inProgressBooks} onBookStatusChange={handleStatusUpdate} />
 
         <Separator />
 
         <h2>Read books</h2>
-        <CarouselCustom books={completedBooks} />
+        <CarouselCustom books={completedBooks} onBookStatusChange={handleStatusUpdate} />
 
 
       </main>
