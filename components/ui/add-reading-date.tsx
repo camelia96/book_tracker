@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
-import { AddReadingDateCallbackFunction, BookWithProfiles } from "@/app/types/types";
+import { AddReadingDateCallbackFunction, BookWithProfiles } from "@/app/types";
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
@@ -23,33 +22,41 @@ import {
   FieldError,
   FieldLabel,
 } from "@/components/ui/field"
-import { booksModel } from "@/generated/prisma/models"
 import { createReadingDate } from "@/actions/book_profile_progress";
-import { formatDate } from "@/app/functions/functions";
 
 interface AddReadingDateDialogProps {
   bookData: BookWithProfiles, sumReadPages: number, onReadingDateCreated: AddReadingDateCallbackFunction
 }
 
+
 export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated }: AddReadingDateDialogProps) {
+
   let leftPagesToRead = bookData.total_pages - sumReadPages;
+
   // Zod validation
   const formSchema = z.object({
     pages: z
       .coerce
       .number<number>({ message: "You must enter a number" })
+      .max(leftPagesToRead, { message: "You can't read more pages than you have left" })
       .int({ message: "Enter the correct format" })
       .positive({ message: "Enter the correct format" })
-      .max(leftPagesToRead, { message: "You can't read more pages than you have left" })
     ,
     date: z.string()
 
   })
 
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  const form = useForm<z.input<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      date: new Date().toISOString().split("T")[0]
+    },
+  })
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
     // Add reading date
-    createReadingDate(bookData.id, data.date, data.pages).then((data) => {
+    createReadingDate(bookData.books_profiles[0].id, values.date, values.pages).then((data) => {
       console.log(data);
       // Pass data to parent
       onReadingDateCreated(data)
@@ -57,12 +64,6 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
 
   }
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      date: new Date().toISOString().split("T")[0]
-    },
-  })
 
 
 
@@ -89,9 +90,9 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
             control={form.control}
             name="pages"
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
+              <Field>
                 <FieldLabel htmlFor="pagesInput">Read pages</FieldLabel>
-                <Input id="pagesInput" placeholder="How many pages have you read?" {...field} type="text" aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
+                <Input id="pagesInput" placeholder="How many pages have you read?" {...field} type="number" aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
                 {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
                 <FieldDescription>You have {leftPagesToRead} pages left</FieldDescription>
               </Field>
@@ -100,7 +101,7 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
 
           {/* Date  */}
           <Controller name="date" control={form.control} render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
+            <Field >
               <FieldLabel htmlFor="date">Date</FieldLabel>
               <Input id="date" type="date" {...field} aria-invalid={fieldState.invalid} value={field.value} />
               {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
@@ -110,7 +111,7 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
           {/* Footer */}
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" onClick={() => form.reset()}>Cancel</Button>
             </DialogClose>
             <Button type="submit">Submit</Button>
           </DialogFooter>
