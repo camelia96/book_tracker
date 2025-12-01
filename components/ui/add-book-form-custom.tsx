@@ -87,7 +87,7 @@ interface AddBookDialogProps {
 
 export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
 
-
+  const [open, setOpen] = useState<boolean>(false);
   const [categories, setCategories] = useState<categoriesModel[]>([]);
 
   // 1. Define your form.
@@ -114,6 +114,12 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
         //console.log("Create book profile", data)
         onBookCreated(data.book_id);
 
+
+
+        // Reset form when submitted
+        console.log("Is submitting")
+        form.reset()
+        setOpen(false);
       })
     })
 
@@ -126,7 +132,7 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
   }, [])
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">Add new book</Button>
       </DialogTrigger>
@@ -244,9 +250,9 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
             />
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline" onClick={() => form.reset()}>Cancel</Button>
               </DialogClose>
-              <Button type="submit">Submit</Button>
+              <Button type="submit" >Submit</Button>
             </DialogFooter>
           </form>
         </Form>
