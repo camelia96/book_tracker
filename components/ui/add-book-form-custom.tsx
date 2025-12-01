@@ -46,7 +46,7 @@ import { categoriesModel } from "@/generated/prisma/models"
 import { createBook, getBookProfile, getBooksProfile } from "@/actions/books"
 import { getCategories } from "@/actions/categories"
 import { createBookProfile } from "@/actions/books_profiles"
-import { AddBookCallbackFunction } from "@/app/types/types"
+import { AddBookCallbackFunction } from "@/app/types"
 
 
 // Zod validation
@@ -57,9 +57,6 @@ const formSchema = z.object({
   author: z.string().min(2, {
     message: "Author name must be at least 2 characters.",
   }),
-  /*  year: z.string().min(4, { message: "Enter the correct year format" }).max(4, { message: "Enter the correct year format" }).optional().or(z.literal("")).refine((val) => !isNaN(Number(val)), {
-     message: "The value must be numeric",
-   }), */
   year: z
     .coerce
     .number<number>({ message: "You must enter a number" })
@@ -96,6 +93,7 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
     defaultValues: {
       name: "",
       author: "",
+      img_url: ""
     },
   })
 
