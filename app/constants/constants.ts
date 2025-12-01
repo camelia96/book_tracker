@@ -1,7 +1,9 @@
 //STATUSES
-export const NOT_STARTED_ID = 1;
-export const IN_PROGRESS_ID = 2;
-export const COMPLETED_ID = 3;
+export const STATUSES_IDS = {
+  not_started: 1,
+  in_progress: 2,
+  completed: 3,
+};
 
 // FAKE CONTST
 export const fakeCurrentProfile = 1;
