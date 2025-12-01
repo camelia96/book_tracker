@@ -1,10 +1,6 @@
 "use server";
 
-import {
-  COMPLETED_ID,
-  IN_PROGRESS_ID,
-  NOT_STARTED_ID,
-} from "@/app/constants/constants";
+import { STATUSES_IDS } from "@/app/constants/constants";
 import { prisma } from "../lib/prisma";
 
 // Create
@@ -36,10 +32,17 @@ export async function createBook({
 }
 
 // Read
-export async function getBooksProfile() {
+export async function getBooksProfile(userId: number) {
   // Fetch all books from database
 
   return await prisma.books.findMany({
+    where: {
+      books_profiles: {
+        some: {
+          profile_id: userId,
+        },
+      },
+    },
     include: {
       books_profiles: {
         select: { id: true, status_id: true },
@@ -68,14 +71,14 @@ export async function getNotStartedBooks(userId: number) {
       books_profiles: {
         some: {
           // Not started status ID
-          status_id: NOT_STARTED_ID,
+          status_id: STATUSES_IDS.not_started,
           profile_id: userId,
         },
       },
     },
     include: {
       books_profiles: {
-        where: { status_id: NOT_STARTED_ID },
+        where: { status_id: STATUSES_IDS.not_started },
         select: { id: true, status_id: true },
       },
     },
@@ -89,14 +92,14 @@ export async function getInProgressBooks(userId: number) {
       books_profiles: {
         some: {
           // In progress status ID
-          status_id: IN_PROGRESS_ID,
+          status_id: STATUSES_IDS.in_progress,
           profile_id: userId,
         },
       },
     },
     include: {
       books_profiles: {
-        where: { status_id: IN_PROGRESS_ID },
+        where: { status_id: STATUSES_IDS.in_progress },
         select: { id: true, status_id: true },
       },
     },
@@ -110,16 +113,21 @@ export async function getCompletedBooks(userId: number) {
       books_profiles: {
         some: {
           // Completed status ID
-          status_id: COMPLETED_ID,
+          status_id: STATUSES_IDS.completed,
           profile_id: userId,
         },
       },
     },
     include: {
       books_profiles: {
-        where: { status_id: COMPLETED_ID },
+        where: { status_id: STATUSES_IDS.completed },
         select: { id: true, status_id: true },
       },
     },
   });
+}
+
+// Delete
+export async function deleteBook(id: number) {
+  return await prisma.books.delete({ where: { id: id } });
 }
