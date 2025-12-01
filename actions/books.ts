@@ -129,5 +129,8 @@ export async function getCompletedBooks(userId: number) {
 
 // Delete
 export async function deleteBook(id: number) {
-  return await prisma.books.delete({ where: { id: id } });
+  return await prisma.books.delete({
+    where: { id: id },
+    
+  });
 }
