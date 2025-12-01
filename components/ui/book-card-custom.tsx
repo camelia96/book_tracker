@@ -197,13 +197,20 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
                 </div>
                 <div className="w-full">
                   <CollapsibleContent className="flex flex-col gap-2">
-                    {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) =>
-                    (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >
-                      {formatDate(e.date)} - {e.read_pages} pages
-                      <Button variant="ghost" size="icon" className="size-6" onClick={() => handleDeleteReadingDate(e.id)}>
-                        <X />
-                      </Button>
-                    </Badge>))}
+                    {booksProgress.length == 0 ?
+                      (<div className="text-gray-500 text-center pt-4">
+                        <p>No reading dates</p>
+                        <p>Add one and fill up the progress bar!</p>
+                      </div>)
+                      : (<div>
+                        {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) =>
+                        (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal" >
+                          {formatDate(e.date)} - {e.read_pages} pages
+                          <Button variant="ghost" size="icon" className="size-6" onClick={() => handleDeleteReadingDate(e.id)}>
+                            <X />
+                          </Button>
+                        </Badge>))}
+                      </div>)}
                   </CollapsibleContent>
                 </div>
               </Collapsible>
@@ -216,7 +223,9 @@ export function BookCard({ book, enhanced = false, onStatusChange }: CardProps) 
 
         <Separator />
 
-        {book.img_url && <div className="flex items-center justify-center"><img src={book.img_url.toString()} alt="Thumbnail" className=" w-40" /></div>}
+        {book.img_url ?
+          (<div className="flex items-center justify-center"><img src={book.img_url.toString()} alt="Thumbnail" className=" w-40" /></div>)
+          : <p className=" text-gray-500">No image available</p>}
 
         <Separator />
 
