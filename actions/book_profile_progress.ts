@@ -1,5 +1,6 @@
 "use server";
 
+import { success } from "zod";
 import { prisma } from "../lib/prisma";
 
 // Create
@@ -17,7 +18,7 @@ export async function createReadingDate(
       },
     });
 
-    return { success: true, newReadingDate: result };
+    return { success: true, createdReadingDate: result };
   } catch (error: any) {
     return {
       success: false,
@@ -29,14 +30,17 @@ export async function createReadingDate(
 // Read
 export async function getBookProfileProgress(bookProfileId: number) {
   try {
-    return await prisma.books_profiles_progress.findMany({
+    const result = await prisma.books_profiles_progress.findMany({
       where: {
         book_profile_id: bookProfileId,
       },
     });
+    return { success: true, bookProfileProgress: result };
   } catch (error) {
-    return undefined;
-
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -48,7 +52,7 @@ export async function deleteReadingDate(readingDateId: number) {
         id: readingDateId,
       },
     });
-    return { success: true, oldReadingDate: result };
+    return { success: true, deletedReadingDate: result };
   } catch (error: any) {
     return {
       success: false,
@@ -59,10 +63,15 @@ export async function deleteReadingDate(readingDateId: number) {
 
 export async function deleteAllReadingDates(bookProfileId: number) {
   try {
-    return await prisma.books_profiles_progress.deleteMany({
+    const result = await prisma.books_profiles_progress.deleteMany({
       where: { book_profile_id: bookProfileId },
     });
+
+    return { success: true, deletedReadingDates: result };
   } catch (error) {
-    return undefined;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
