@@ -2,6 +2,7 @@
 
 import { STATUSES_IDS } from "@/app/constants/constants";
 import { prisma } from "../lib/prisma";
+import { booksModel } from "@/generated/prisma/models";
 
 // Create
 export async function createBook({
@@ -37,107 +38,103 @@ export async function createBook({
 
 // Read
 export async function getBooksProfile(userId: number) {
-  // Fetch all books from database
-
-  return await prisma.books.findMany({
-    where: {
-      books_profiles: {
-        some: {
-          profile_id: userId,
-        },
-      },
-    },
-    include: {
-      books_profiles: {
-        select: { id: true, status_id: true },
-      },
-    },
-  });
-}
-
-export async function getBookProfile(bookId: number) {
-  return await prisma.books.findFirst({
-    where: {
-      id: bookId,
-    },
-    include: {
-      books_profiles: {
-        select: { id: true, status_id: true },
-      },
-    },
-  });
-}
-
-export async function getNotStartedBooks(userId: number) {
-  // Fetch all books with status: not started
-  return await prisma.books.findMany({
-    where: {
-      books_profiles: {
-        some: {
-          // Not started status ID
-          status_id: STATUSES_IDS.not_started,
-          profile_id: userId,
-        },
-      },
-    },
-    include: {
-      books_profiles: {
-        where: { status_id: STATUSES_IDS.not_started },
-        select: { id: true, status_id: true },
-      },
-    },
-  });
-}
-
-export async function getInProgressBooks(userId: number) {
-  // Fetch all books with status: in progress
-  return await prisma.books.findMany({
-    where: {
-      books_profiles: {
-        some: {
-          // In progress status ID
-          status_id: STATUSES_IDS.in_progress,
-          profile_id: userId,
-        },
-      },
-    },
-    include: {
-      books_profiles: {
-        where: { status_id: STATUSES_IDS.in_progress },
-        select: { id: true, status_id: true },
-      },
-    },
-  });
-}
-
-export async function getCompletedBooks(userId: number) {
-  // Fetch all books with status: completed
-  return await prisma.books.findMany({
-    where: {
-      books_profiles: {
-        some: {
-          // Completed status ID
-          status_id: STATUSES_IDS.completed,
-          profile_id: userId,
-        },
-      },
-    },
-    include: {
-      books_profiles: {
-        where: { status_id: STATUSES_IDS.completed },
-        select: { id: true, status_id: true },
-      },
-    },
-  });
-}
-
-// Delete
-export async function deleteBook(id: number) {
   try {
-    return await prisma.books.delete({
-      where: { id: id },
+    // Fetch all books from database
+    return await prisma.books.findMany({
+      where: {
+        books_profiles: {
+          some: {
+            profile_id: userId,
+          },
+        },
+      },
+      include: {
+        books_profiles: {
+          select: { id: true, status_id: true },
+        },
+      },
     });
   } catch (error) {
-    return undefined;
+    return undefined
+  }
+}
+
+
+// UPDATE/DELETE: Transactions
+// Sequential operations for deleting the book completely
+export async function deleteBookComplete(
+  bookId: number,
+  bookProfileId: number
+): Promise<{
+  success: boolean;
+  book?: booksModel;
+  error?: string;
+}> {
+  try {
+    const [deletedDates, deletedBookProfile, deletedBook] =
+      await prisma.$transaction([
+        // Step 1: Delete book's reading dates
+        prisma.books_profiles_progress.deleteMany({
+          where: { book_profile_id: bookProfileId },
+        }),
+        // Step 2: Delete relation book-profile
+        prisma.books_profiles.delete({ where: { id: bookProfileId } }),
+        // Step 3: Delete book
+        prisma.books.delete({ where: { id: bookId } }),
+      ]);
+
+    return { success: true, book: deletedBook };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// CREATE: Nested Writes
+export async function createBookComplete(
+  book: {
+    name: string;
+    author: string;
+    year: number;
+    total_pages: number;
+    img_url?: string | undefined;
+    category: string;
+  },
+  profileId: number
+) {
+  try {
+    const result = await prisma.books.create({
+      data: {
+        name: book.name,
+        author: book.author,
+        total_pages: book.total_pages,
+        img_url: book.img_url,
+        year: book.year,
+        category_id: parseInt(book.category),
+        books_profiles: {
+          create: {
+            profile_id: profileId,
+            status_id: STATUSES_IDS.not_started,
+          },
+        },
+      },
+      include: {
+        books_profiles: {
+          select: {
+            id: true,
+            status_id: true,
+          },
+        },
+      },
+    });
+
+    return { success: true, bookProfile: result };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
