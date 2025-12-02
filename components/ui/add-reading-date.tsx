@@ -23,6 +23,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { createReadingDate } from "@/actions/book_profile_progress";
+import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "./alert";
 
 interface AddReadingDateDialogProps {
   bookData: BookWithProfiles, sumReadPages: number, onReadingDateCreated: AddReadingDateCallbackFunction
@@ -30,6 +32,8 @@ interface AddReadingDateDialogProps {
 
 
 export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated }: AddReadingDateDialogProps) {
+
+  const [error, setError] = useState<boolean>(false);
 
   let leftPagesToRead = bookData.total_pages - sumReadPages;
 
@@ -57,9 +61,16 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Add reading date
     createReadingDate(bookData.books_profiles[0].id, values.date, values.pages).then((data) => {
-      console.log(data);
-      // Pass data to parent
-      onReadingDateCreated(data)
+      if (data) {
+
+        console.log(data);
+        // Pass data to parent
+        onReadingDateCreated(data)
+
+        setError(false);
+      } else {
+        setError(true)
+      }
     })
 
   }
@@ -80,6 +91,12 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
 
       {/* Content */}
       <DialogContent className="sm:max-w-[425px]">
+        {error && (<Alert variant={"destructive"} className="border-border-error bg-bg-error">
+          <AlertTitle>Heads up!</AlertTitle>
+          <AlertDescription>
+            There's been an error while adding a new reading date. Try again later.
+          </AlertDescription>
+        </Alert>)}
         <DialogTitle>Add new date</DialogTitle>
         <DialogDescription>Here you can add a new date whenever you have read a bunch of pages. Don't forget to enter the total of pages too!</DialogDescription>
 
