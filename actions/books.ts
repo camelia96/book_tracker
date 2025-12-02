@@ -19,16 +19,20 @@ export async function createBook({
   category: string;
   img_url?: string | undefined;
 }) {
-  return await prisma.books.create({
-    data: {
-      name: name,
-      author: author,
-      total_pages: total_pages,
-      img_url: img_url,
-      year: year,
-      category_id: parseInt(category),
-    },
-  });
+  try {
+    return await prisma.books.create({
+      data: {
+        name: name,
+        author: author,
+        total_pages: total_pages,
+        img_url: img_url,
+        year: year,
+        category_id: parseInt(category),
+      },
+    });
+  } catch (error: any) {
+    return undefined;
+  }
 }
 
 // Read
@@ -129,8 +133,11 @@ export async function getCompletedBooks(userId: number) {
 
 // Delete
 export async function deleteBook(id: number) {
-  return await prisma.books.delete({
-    where: { id: id },
-    
-  });
+  try {
+    return await prisma.books.delete({
+      where: { id: id },
+    });
+  } catch (error) {
+    return undefined;
+  }
 }
