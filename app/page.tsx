@@ -1,17 +1,13 @@
 "use client"
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 import { AddBook } from "@/components/ui/add-book-form-custom";
-
 import { Separator } from "@/components/ui/separator";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getBooksProfile } from "../actions/books";
 import { CarouselCustom } from "@/components/ui/carousel-custom";
 import { BookWithProfiles } from "@/app/types";
 import { STATUSES_IDS, fakeCurrentProfile } from "./constants/constants";
-import { createBookProfile } from "@/actions/books_profiles";
-import { booksModel, profilesModel } from "@/generated/prisma/models";
-import { getProfiles } from "@/actions/profiles";
+import { booksModel } from "@/generated/prisma/models";
 
 export default function Home() {
   // States  
@@ -21,11 +17,10 @@ export default function Home() {
   const [completedBooks, setCompletedBooks] = useState<BookWithProfiles[]>([]);
 
   // Current user
-  const [user, setUser] = useState<profilesModel | null>(null)
+  //const [user, setUser] = useState<profilesModel | null>(null)
 
   // Callbacks
   const handleBookCreated = (newBook: BookWithProfiles) => {
-
     // Update new book on carousel - not started because by default it creates not started
     setNotStartedBooks([...notStartedBooks, newBook])
 
@@ -37,10 +32,8 @@ export default function Home() {
     setInProgressBooks(inProgressBooks.filter(b => b.id !== updatedBook.id))
     setCompletedBooks(completedBooks.filter(b => b.id !== updatedBook.id))
 
-
     // Save updated book status id
     const updatedStatusId = updatedBook.books_profiles[0].status_id;
-
 
     // Add updated book to equivalent state
     if (updatedStatusId === STATUSES_IDS.not_started) {
@@ -115,7 +108,6 @@ export default function Home() {
 
         <h2>Read books</h2>
         <CarouselCustom books={completedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
-
 
       </main>
     </div>

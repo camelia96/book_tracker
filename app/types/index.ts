@@ -1,6 +1,5 @@
 import {
   books_profiles_progressModel,
-  books_profilesModel,
   booksModel,
 } from "@/generated/prisma/models";
 

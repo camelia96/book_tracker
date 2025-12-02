@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Book, Calendar, ChevronsUpDown, Layers, Plus, User, X } from "lucide-react";
+import { Book, Calendar, ChevronsUpDown, Layers, User, X } from "lucide-react";
 import { deleteReadingDate, getBookProfileProgress } from "@/actions/book_profile_progress";
 import { AddReadPagesDate } from "./add-reading-date-custom";
 import { formatDate } from "@/app/functions/functions";
