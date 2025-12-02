@@ -6,7 +6,7 @@ import { prisma } from "../lib/prisma";
 // Create
 export async function createBookProfile(userId: number, bookId: number) {
   try {
-    return await prisma.books_profiles.create({
+    const result = await prisma.books_profiles.create({
       data: {
         book_id: bookId,
         profile_id: userId,
@@ -14,35 +14,50 @@ export async function createBookProfile(userId: number, bookId: number) {
         status_id: STATUSES_IDS.not_started,
       },
     });
+
+    return { success: true, createdBookProfile: result };
   } catch (error) {
-    return undefined;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
 // Read
 
 // Update
-export async function updateBookStatus(rowId: number, newStatusId: number) {
+export async function updateBookStatus(id: number, newStatusId: number) {
   try {
-    return await prisma.books_profiles.update({
+    const result = await prisma.books_profiles.update({
       data: {
         status_id: newStatusId,
       },
-      where: { id: rowId },
+      where: { id: id },
       select: {
-        book_id: true,
+        id: true,
+        status_id: true,
+        books: true,
       },
     });
+    return { success: true, updatedBookStatus: result };
   } catch (error) {
-    return undefined;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
 // Delete
 export async function deleteBookProfile(id: number) {
   try {
-    return await prisma.books_profiles.delete({ where: { id: id } });
+    const result = await prisma.books_profiles.delete({ where: { id: id } });
+    return { success: true, deletedBookProfile: result };
   } catch (error) {
-    return undefined;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
