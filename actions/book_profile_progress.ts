@@ -10,13 +10,17 @@ export async function createReadingDate(
   date: string,
   readPages: number
 ) {
-  return await prisma.books_profiles_progress.create({
-    data: {
-      book_profile_id: bookId,
-      date: new Date(date),
-      read_pages: readPages,
-    },
-  });
+  try {
+    return await prisma.books_profiles_progress.create({
+      data: {
+        book_profile_id: bookId,
+        date: new Date(date),
+        read_pages: readPages,
+      },
+    });
+  } catch (error) {
+    return undefined;
+  }
 }
 
 // Read
@@ -30,15 +34,23 @@ export async function getBookProfileProgress(bookProfileId: number) {
 
 // Delete
 export async function deleteReadingDate(readingDateId: number) {
-  return await prisma.books_profiles_progress.delete({
-    where: {
-      id: readingDateId,
-    },
-  });
+  try {
+    return await prisma.books_profiles_progress.delete({
+      where: {
+        id: readingDateId,
+      },
+    });
+  } catch (error) {
+    return undefined;
+  }
 }
 
 export async function deleteAllReadingDates(bookProfileId: number) {
-  return await prisma.books_profiles_progress.deleteMany({
-    where: { book_profile_id: bookProfileId },
-  });
+  try {
+    return await prisma.books_profiles_progress.deleteMany({
+      where: { book_profile_id: bookProfileId },
+    });
+  } catch (error) {
+    return undefined
+  }
 }
