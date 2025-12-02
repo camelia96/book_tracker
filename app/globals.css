@@ -40,18 +40,26 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   /* Custom */
-  --color-text-error: var(--color-red-700);
-  --color-text-warning: var(--color-yellow-700);
-  --color-text-success: var(--color-green-700);
-  --color-text-info: var(--color-gray-700);
-  --color-border-error: var(--color-red-500);
-  --color-border-warning: var(--color-yellow-500);
-  --color-border-success: var(--color-green-500);
-  --color-border-info: var(--color-gray-500);
-  --color-bg-error: var(--color-red-50);
-  --color-bg-warning: var(--color-yellow-50);
-  --color-bg-success: var(--color-green-50);
-  --color-bg-info: var(--color-gray-50);
+
+  /* Error */
+  --color-bg-error: #fef2f2;
+  --color-border-error: #fecaca;
+  --color-text-error: #dc2626;
+
+  /* Success */
+  --color-bg-success: #f0fdf4;
+  --color-border-success: #bbf7d0;
+  --color-text-success: #16a34a;
+
+  /* Warning */
+  --color-bg-warning: #fffbeb;
+  --color-border-warning: #fde68a;
+  --color-text-warning: #d97706;
+
+  /* Info */
+  --color-bg-info: #f1f5f9;
+  --color-border-info: #cbd5e1;
+  --color-text-info: #475569;
 }
 
 @media (prefers-color-scheme: light) {
