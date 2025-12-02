@@ -249,15 +249,15 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
                         <p>No reading dates</p>
                         <p>Add one and fill up the progress bar!</p>
                       </div>)
-                      : (<div>
+                      : (<div className="flex flex-col gap-2">
                         {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) =>
-                        (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal flex " >
+                        (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal flex gap-2" >
                           {e.read_pages} pages - {formatDate(e.date)}
 
                           {/* Alert Dialog - Confirm deleting reading date */}
                           <AlertDialogCustom
                             description="This action cannot be undone. This will permanently delete the reading date. You can always add it again."
-                            trigger={<X />}
+                            trigger={<X size={20} className=" rounded-sm p-1 hover:bg-gray-100 transition-all duration-200"/>}
                             action="Delete"
                             handle={() => handleDeleteReadingDate(e.id)}
                           />
