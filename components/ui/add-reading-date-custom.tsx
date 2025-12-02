@@ -98,7 +98,7 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
 
 
         <DialogTitle>Add new date</DialogTitle>
-        <DialogDescription>Here you can add a new date whenever you have read a bunch of pages. Don't forget to enter the total of pages too!</DialogDescription>
+        <DialogDescription className="text-xs">Here you can add a new date whenever you have read a bunch of pages. Don't forget to enter the total of pages too!</DialogDescription>
 
         <form onSubmit={form.handleSubmit(onSubmit, (errors) => { console.log(errors) })} className="space-y-8">
 
@@ -107,11 +107,11 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
             control={form.control}
             name="pages"
             render={({ field, fieldState }) => (
-              <Field>
-                <FieldLabel htmlFor="pagesInput">Read pages</FieldLabel>
-                <Input id="pagesInput" placeholder="How many pages have you read?" {...field} type="number" aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
-                {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
-                <FieldDescription>You have {leftPagesToRead} pages left</FieldDescription>
+              <Field >
+                <FieldLabel className="text-xs" htmlFor="pagesInput">Read pages</FieldLabel>
+                <Input className="text-xs" id="pagesInput" placeholder="How many pages have you read?" {...field} type="number" aria-invalid={fieldState.invalid} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
+                {fieldState.invalid && (<FieldError className="text-xs" errors={[fieldState.error]} />)}
+                <FieldDescription className="text-xs">You have {leftPagesToRead} pages left</FieldDescription>
               </Field>
             )}
           />
@@ -119,9 +119,9 @@ export function AddReadPagesDate({ bookData, sumReadPages, onReadingDateCreated 
           {/* Date  */}
           <Controller name="date" control={form.control} render={({ field, fieldState }) => (
             <Field >
-              <FieldLabel htmlFor="date">Date</FieldLabel>
-              <Input id="date" type="date" {...field} aria-invalid={fieldState.invalid} value={field.value} />
-              {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
+              <FieldLabel className="text-xs" htmlFor="date">Date</FieldLabel>
+               <Input className="text-xs" id="date" type="date" {...field} aria-invalid={fieldState.invalid} value={field.value} />
+              {fieldState.invalid && (<FieldError className="text-xs" errors={[fieldState.error]} />)}
             </Field>
           )} />
 

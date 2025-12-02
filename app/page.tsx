@@ -81,12 +81,12 @@ export default function Home() {
       <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-between py-32 px-16 gap-6 bg-white dark:bg-black sm:items-start">
         <h1>Book tracker</h1>
 
-        <Separator />
+        {/* <Separator />
 
         <div>
           <h2>Profile</h2>
           <Badge variant={"outline"}>username</Badge>
-        </div>
+        </div> */}
 
         <Separator />
 

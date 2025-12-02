@@ -196,7 +196,7 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
 
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full">
       {/** Book data */}
       <CardHeader >
         <CardTitle className="flex items-start gap-1"><Book size={16} />{book.name}</CardTitle>
@@ -251,13 +251,13 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
                       </div>)
                       : (<div className="flex flex-col gap-2">
                         {booksProgress.sort((a, b) => b.date.getTime() - a.date.getTime()).map((e) =>
-                        (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal flex gap-2" >
+                        (<Badge key={e.id} variant={"outline"} className="w-full py-2 rounded-md font-normal flex justify-center items-center gap-2" >
                           {e.read_pages} pages - {formatDate(e.date)}
 
                           {/* Alert Dialog - Confirm deleting reading date */}
-                          <AlertDialogCustom
+                          <AlertDialogCustom triggerClassName="flex"
                             description="This action cannot be undone. This will permanently delete the reading date. You can always add it again."
-                            trigger={<X size={20} className=" rounded-sm p-1 hover:bg-gray-100 transition-all duration-200"/>}
+                            trigger={<X size={20} className=" rounded-sm p-1 hover:bg-gray-100 transition-all duration-200" />}
                             action="Delete"
                             handle={() => handleDeleteReadingDate(e.id)}
                           />
@@ -288,8 +288,8 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
         {/** Book status */}
         <CardAction className="w-full">
           {loadingStatus
-            ? <Badge variant="outline">
-              <Spinner />
+            ? <Badge variant="outline" className="w-full">
+              <Spinner className="w-full" />
               Loading status
             </Badge>
             : statuses.length === 0
@@ -299,13 +299,14 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
                 type="destructive"
                 description="No statuses available for the book. Refresh and try again" />)
               : (<Select value={status.toString()} onValueChange={handleStatusChange} >
-                <h6>Status</h6>
+                <h6 className="py-1">Status</h6>
                 <SelectTrigger
                   className={`
-              text-xs 
-            ${status == '3' ? 'border-border-success bg-bg-success text-text-success '
-                      : status == '2' ? 'border-border-warning bg-bg-warning text-text-warning '
-                        : 'border-border-info bg-bg-info text-text-info '}`}>
+                    w-full
+                    text-xs 
+                    ${status == '3' ? 'border-border-success bg-bg-success text-text-success '
+                              : status == '2' ? 'border-border-warning bg-bg-warning text-text-warning '
+                                : 'border-border-info bg-bg-info text-text-info '}`}>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent >
@@ -314,11 +315,12 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
               </Select>)}
 
           {/* Delete Book */}
-          <div className="flex flex-col gap-3 mt-4">
+          <div className="flex flex-col gap-3 mt-4 w-full">
             {/* Alert Dialog - Confirm deleting reading date */}
             <AlertDialogCustom
+            triggerClassName="w-full"
               description="This action cannot be undone. This will permanently delete the book from the database."
-              trigger={(<div className={cn(buttonVariants({ variant: "default" })) + ` text-xs`}>Delete book</div>)}
+              trigger={(<div className={cn(buttonVariants({ variant: "default" })) + ` text-xs w-full`}>Delete book</div>)}
               action="Delete"
               handle={handleDeleteBook} />
           </div>

@@ -38,6 +38,7 @@ import { getCategories } from "@/actions/categories"
 import { AddBookCallbackFunction } from "@/app/types"
 import { toast } from "sonner"
 import { AlertCustom } from "./alert-custom"
+import { ScrollArea } from "./scroll-area"
 
 // Zod validation
 const formSchema = z.object({
@@ -139,21 +140,21 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-4xl">
         <DialogTitle>Add Book</DialogTitle>
-        <DialogDescription>Add a new book. You'll have to choose if this is a new book you want to read, a book that you are already reading or a completed book from your selection. Enjoy!</DialogDescription>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit, (errors) => { console.log(errors) })} className="space-y-8">
+        <DialogDescription className="text-xs">Add a new book. You'll have to choose if this is a new book you want to read, a book that you are already reading or a completed book from your selection. Enjoy!</DialogDescription>
+        <Form {...form} >
+          <form onSubmit={form.handleSubmit(onSubmit, (errors) => { console.log(errors) })} className=" space-y-2 md:space-y-4">
 
-            <div className="flex gap-10">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-8">
               {/** Book name */}
               <Controller
                 control={form.control}
                 name="name"
                 render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel>Book name</FieldLabel>
-                    <Input placeholder="Choose a book name" {...field} aria-invalid={fieldState.invalid} />
+                  <Field className="gap-2">
+                    <FieldLabel className="text-xs " htmlFor="name">Book name</FieldLabel>
+                    <Input className="text-xs md:text-xs h-9" id="name" placeholder="Choose a book name" {...field} aria-invalid={fieldState.invalid} />
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <FieldError className="text-xs" errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
@@ -164,26 +165,27 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
                 control={form.control}
                 name="author"
                 render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel>Author</FieldLabel>
-                    <Input placeholder="Enter the author" {...field} aria-invalid={fieldState.invalid} />
+                  <Field className="gap-2">
+                    <FieldLabel className="text-xs " htmlFor="author">Author</FieldLabel>
+                    <Input className="text-xs md:text-xs h-9" id="author" placeholder="Enter the author" {...field} aria-invalid={fieldState.invalid} />
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <FieldError className="text-xs" errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
               />
             </div>
 
-            <div className="flex gap-10">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+
               {/** Year */}
               <Controller
                 control={form.control}
                 name="year"
                 render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel htmlFor="yearInput">Year</FieldLabel>
-                    <Input aria-invalid={fieldState.invalid} id="yearInput" type="number" placeholder="Enter a year" {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
+                  <Field className="gap-2 ">
+                    <FieldLabel className="text-xs " htmlFor="yearInput">Year</FieldLabel>
+                    <Input className="text-xs md:text-xs h-9" aria-invalid={fieldState.invalid} id="yearInput" type="number" placeholder="Enter a year" {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
                     {fieldState.error && (<FieldError>{fieldState.error.message}</FieldError>)}
                   </Field>
                 )}
@@ -195,11 +197,11 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
                 control={form.control}
                 name="total_pages"
                 render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel htmlFor="totalPages">Total pages</FieldLabel>
-                    <Input id="totalPages" aria-invalid={fieldState.invalid} placeholder="Enter the amount of pages the book has" {...field} type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
+                  <Field className="gap-2">
+                    <FieldLabel className="text-xs " htmlFor="totalPages">Total pages</FieldLabel>
+                    <Input className="text-xs md:text-xs h-9" id="totalPages" aria-invalid={fieldState.invalid} placeholder="Enter the amount of pages the book has" {...field} type="number" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value == "" ? undefined : e.target.value)} />
                     {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+                      <FieldError className="text-xs" errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
@@ -211,11 +213,11 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
               control={form.control}
               name="img_url"
               render={({ field, fieldState }) => (
-                <Field>
-                  <FormLabel>Image URL</FormLabel>
-                  <Input placeholder="Enter an image URL" {...field} type="string" aria-invalid={fieldState.invalid} {...field} />
+                <Field className="gap-2">
+                  <FieldLabel className="text-xs " htmlFor="imgURL">Image URL</FieldLabel>
+                  <Input className="text-xs md:text-xs h-9" id="imgURL" placeholder="Enter an image URL" {...field} type="string" aria-invalid={fieldState.invalid} {...field} />
                   {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                    <FieldError className="text-xs" errors={[fieldState.error]} />
                   )}
                 </Field>
               )}
@@ -226,9 +228,10 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
               control={form.control}
               render={({ field, fieldState }) =>
               (<Field
+                className="gap-2"
                 orientation="responsive"
                 data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="categorySelect">Category</FieldLabel>
+                <FieldLabel className="text-xs" htmlFor="categorySelect">Category</FieldLabel>
                 {categories.length < 1 ?
                   (<AlertCustom
                     type="destructive"
@@ -238,19 +241,19 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
                       <Select name={field.name}
                         value={field.value}
                         onValueChange={field.onChange}>
-                        <SelectTrigger aria-invalid={fieldState.invalid} id="categorySelect" className="w-[180px]">
+                        <SelectTrigger aria-invalid={fieldState.invalid} id="categorySelect" className=" text-xs w-[180px]">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent  >
                           <SelectGroup>
                             <SelectLabel>Select a category</SelectLabel>
                             {categories.map((c) =>
-                              (<SelectItem key={c.id} value={String(c.id)}>{c.category}</SelectItem>))}
+                              (<SelectItem className="text-xs" key={c.id} value={String(c.id)}>{c.category}</SelectItem>))}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
                       {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
+                        <FieldError className="text-xs" errors={[fieldState.error]} />
                       )}
                     </>)}
 

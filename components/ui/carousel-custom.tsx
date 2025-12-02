@@ -12,7 +12,7 @@ import { ListBookProps } from "@/app/types";
 export function CarouselCustom({ books, enhanced = false, onStatusChange, onDeleteBook }: ListBookProps) {
 
     {/* Carousel start */ }
-    return (<Carousel className="w-full">
+    return (<Carousel className="w-full justify-center">
         <CarouselContent>
             {books.length == 0
                 ? (<CarouselItem>
@@ -20,7 +20,7 @@ export function CarouselCustom({ books, enhanced = false, onStatusChange, onDele
                 </CarouselItem>)
                 : (<>
                     {books.map((e) =>
-                    (<CarouselItem key={e.id} className="basis-1/3">
+                    (<CarouselItem key={e.id} className="sm:basis-1/2 md:basis-1/3">
                         <BookCard book={e} enhanced={enhanced} onStatusChange={onStatusChange} onDeleteBook={onDeleteBook}/>
                     </CarouselItem>))}
                 </>)
