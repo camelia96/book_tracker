@@ -41,13 +41,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { categoriesModel } from "@/generated/prisma/models"
-import { createBook, getBookProfile, getBooksProfile } from "@/actions/books"
+import { createBook } from "@/actions/books"
 import { getCategories } from "@/actions/categories"
 import { createBookProfile } from "@/actions/books_profiles"
 import { AddBookCallbackFunction } from "@/app/types"
-
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { toast } from "sonner"
 
 // Zod validation
 const formSchema = z.object({
@@ -87,6 +88,7 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
   const [open, setOpen] = useState<boolean>(false);
   const [categories, setCategories] = useState<categoriesModel[]>([]);
 
+  const [error, setError] = useState<boolean>(false);
   // 1. Define your form.
   const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -104,22 +106,67 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
     //console.log(values)
 
     // Add new book
-    createBook(values).then((data) => {
-      //console.log("Create book ", data)
-
-      // Add created book to current profile
-      createBookProfile(user, data.id).then((data) => {
-        //console.log("Create book profile", data)
+    /* try {
+      createBook(values)
+      // Add new book - profile
+      .then((data) => createBookProfile(user, data.id))
+      .then((data) => {
+        // Callback to main page
         onBookCreated(data.book_id);
 
-
-
         // Reset form when submitted
-        console.log("Is submitting")
-        form.reset()
-        setOpen(false);
+        //form.reset()
+
+        // Close dialog
+        //setOpen(false);
+       // throw new Error("Error for add new book")
       })
-    })
+    } catch (err) {
+      console.log(err instanceof PrismaClientKnownRequestError)
+      toast("Event has been created", {
+        description: "Sunday, December 03, 2023 at 9:00 AM",
+        action: {
+          label: "Undo",
+          onClick: () => console.log("Undo"),
+        },
+      })
+    } */
+
+    createBook(values)
+      .then((data) => {
+        // If the promise returns a value
+        if (data) {
+          // No error
+          setError(false)
+
+          // Add created book to current profile
+          createBookProfile(user, data.id).then((data) => {
+            if(data) {
+              // No error
+              setError(false)
+
+              // Callback data to main page
+              onBookCreated(data.book_id);
+
+              // Close dialog
+              setOpen(false);
+  
+              // Reset form when submitted
+              form.reset()
+            } else {
+              setError(true)
+            }
+            
+          })
+
+        } else {
+          setError(true)
+        }
+
+
+      })
+
+
 
   }
 
@@ -131,11 +178,18 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+
       <DialogTrigger asChild>
         <Button variant="outline">Add new book</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-4xl">
         <DialogTitle>Add Book</DialogTitle>
+        {error && (<Alert variant={"destructive"} className="border-border-error bg-bg-error">
+          <AlertTitle>Heads up!</AlertTitle>
+          <AlertDescription>
+            There's been an error when creating the book. Check the data for the new book, and try again.
+          </AlertDescription>
+        </Alert>)}
         <DialogDescription>Add a new book. You'll have to choose if this is a new book you want to read, a book that you are already reading or a completed book from your selection. Enjoy!</DialogDescription>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, (errors) => { console.log(errors) })} className="space-y-8">
