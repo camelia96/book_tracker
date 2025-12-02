@@ -26,6 +26,7 @@ import { AlertDialogCustom } from "./alert-dialog-custom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { AlertCustom } from "./alert-custom";
+import { Spinner } from "@/components/ui/spinner"
 
 
 function calculateBookProgress(data: books_profiles_progressModel[], book: BookWithProfiles) {
@@ -46,7 +47,6 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
   // Selected status
   const [status, setStatus] = useState<String>(bookCurrentStatus.toString());
 
-
   // All statuses from database
   const [statuses, setStatuses] = useState<statusesModel[]>([]);
 
@@ -56,14 +56,21 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
   // Sum of all read pages
   const [sumReadPages, setSumReadPages] = useState<number>(0);
 
+  // Loading status
+  const [loadingStatus, setLoadingStatus] = useState<boolean>(false);
+
 
   // Get statuses
   const fetchStatuses = async () => {
+    setLoadingStatus(true);
+
     const result = await getStatuses();
 
     if (result && result.statuses) {
       setStatuses(result.statuses)
     }
+
+    setLoadingStatus(false);
   }
 
   // Get current book
@@ -186,6 +193,8 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
 
   }, [])
 
+
+
   return (
     <Card className="w-full max-w-sm">
       {/** Book data */}
@@ -278,26 +287,31 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
 
         {/** Book status */}
         <CardAction className="w-full">
-          {statuses.length === 0
-            ? (<AlertCustom
-              color="error"
-              title="Error"
-              type="destructive"
-              description="No statuses available for the book. Refresh and try again" />)
-            : (<Select value={status.toString()} onValueChange={handleStatusChange} >
-              <h6>Status</h6>
-              <SelectTrigger
-                className={`
+          {loadingStatus
+            ? <Badge variant="outline">
+              <Spinner />
+              Loading status
+            </Badge>
+            : statuses.length === 0
+              ? (<AlertCustom
+                color="error"
+                title="Error"
+                type="destructive"
+                description="No statuses available for the book. Refresh and try again" />)
+              : (<Select value={status.toString()} onValueChange={handleStatusChange} >
+                <h6>Status</h6>
+                <SelectTrigger
+                  className={`
               text-xs 
             ${status == '3' ? 'border-border-success bg-bg-success text-text-success '
-                    : status == '2' ? 'border-border-warning bg-bg-warning text-text-warning '
-                      : 'border-border-info bg-bg-info text-text-info '}`}>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent >
-                {statuses.map((e) => (<SelectItem key={e.id} value={e.id.toString()} className="text-xs" >{e.status}</SelectItem>))}
-              </SelectContent>
-            </Select>)}
+                      : status == '2' ? 'border-border-warning bg-bg-warning text-text-warning '
+                        : 'border-border-info bg-bg-info text-text-info '}`}>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent >
+                  {statuses.map((e) => (<SelectItem key={e.id} value={e.id.toString()} className="text-xs" >{e.status}</SelectItem>))}
+                </SelectContent>
+              </Select>)}
 
           {/* Delete Book */}
           <div className="flex flex-col gap-3 mt-4">

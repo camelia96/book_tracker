@@ -11,7 +11,6 @@ import { booksModel } from "@/generated/prisma/models";
 
 export default function Home() {
   // States  
-  //const [allBooks, setAllBooks] = useState<BookWithProfiles[]>([]);
   const [notStartedBooks, setNotStartedBooks] = useState<BookWithProfiles[]>([]);
   const [inProgressBooks, setInProgressBooks] = useState<BookWithProfiles[]>([]);
   const [completedBooks, setCompletedBooks] = useState<BookWithProfiles[]>([]);
