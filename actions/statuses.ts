@@ -1,10 +1,17 @@
 "use server";
 
+import { success } from "zod";
 import { prisma } from "../lib/prisma";
 
 // Read
-
 export async function getStatuses() {
-  // Fetch all books from database
-  return await prisma.statuses.findMany();
+  try {
+    const result = await prisma.statuses.findMany();
+    return { success: true, statuses: result };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 }
