@@ -21,7 +21,7 @@ export async function createBook({
   img_url?: string | undefined;
 }) {
   try {
-    return await prisma.books.create({
+    const result = await prisma.books.create({
       data: {
         name: name,
         author: author,
@@ -31,8 +31,13 @@ export async function createBook({
         category_id: parseInt(category),
       },
     });
+
+    return { success: true, createdBook: result };
   } catch (error: any) {
-    return undefined;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -40,7 +45,7 @@ export async function createBook({
 export async function getBooksProfile(userId: number) {
   try {
     // Fetch all books from database
-    return await prisma.books.findMany({
+    const result = await prisma.books.findMany({
       where: {
         books_profiles: {
           some: {
@@ -54,11 +59,15 @@ export async function getBooksProfile(userId: number) {
         },
       },
     });
+
+    return { success: true, booksProfile: result };
   } catch (error) {
-    return undefined
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
-
 
 // UPDATE/DELETE: Transactions
 // Sequential operations for deleting the book completely
@@ -130,7 +139,7 @@ export async function createBookComplete(
       },
     });
 
-    return { success: true, bookProfile: result };
+    return { success: true, createdBookComplete: result };
   } catch (error: any) {
     return {
       success: false,
