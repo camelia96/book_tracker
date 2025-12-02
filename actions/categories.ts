@@ -1,8 +1,17 @@
 "use server";
 
-import { booksModel } from "@/generated/prisma/models";
+import { success } from "zod";
 import { prisma } from "../lib/prisma";
+
 export async function getCategories() {
-    return await prisma.categories.findMany();
+  try {
+    const result = await prisma.categories.findMany();
+
+    return {success: true, categories: result}
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
-  
+}
