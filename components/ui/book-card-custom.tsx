@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible";
 import { Badge } from "@/components/ui/badge";
 import { statusesModel, books_profiles_progressModel } from "@/generated/prisma/models";
-import { MouseEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getStatuses } from "@/actions/statuses";
 import { BookWithProfiles } from "@/app/types";
 import { Separator } from "@/components/ui/separator";
@@ -16,26 +16,16 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Book, Calendar, ChevronsUpDown, Layers, Plus, User, X } from "lucide-react";
-import { deleteAllReadingDates, deleteReadingDate, getBookProfileProgress } from "@/actions/book_profile_progress";
-import { AddReadPagesDate } from "./add-reading-date";
+import { deleteReadingDate, getBookProfileProgress } from "@/actions/book_profile_progress";
+import { AddReadPagesDate } from "./add-reading-date-custom";
 import { formatDate } from "@/app/functions/functions";
-import { deleteBookProfile, updateBookStatus } from "@/actions/books_profiles";
-import { deleteBook, getBookProfile } from "@/actions/books";
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { updateBookStatus } from "@/actions/books_profiles";
+import { deleteBookComplete } from "@/actions/books";
 import { SingleBookProps } from "@/app/types";
 import { AlertDialogCustom } from "./alert-dialog-custom";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { AlertCustom } from "./alert-custom";
 
 
 function calculateBookProgress(data: books_profiles_progressModel[], book: BookWithProfiles) {
@@ -67,72 +57,90 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
   const [sumReadPages, setSumReadPages] = useState<number>(0);
 
 
-  useEffect(() => {
-    // Get statuses
-    getStatuses().then(setStatuses);
+  // Get statuses
+  const fetchStatuses = async () => {
+    const result = await getStatuses();
 
-    // Get current book reading dates only if status -> In progress
-    getBookProfileProgress(book.books_profiles[0].id).then((data) => {
+    if (result && result.statuses) {
+      setStatuses(result.statuses)
+    }
+  }
 
-      setBooksProgress(data);
+  // Get current book
+  const fetchBookProfileProgress = async () => {
+    const result = await getBookProfileProgress(book.books_profiles[0].id);
+
+    if (result && result.bookProfileProgress) {
+      setBooksProgress(result.bookProfileProgress);
 
       // Set total read pages so far (int)
-      setSumReadPages(calculateBookProgress(data, book).sum);
+      setSumReadPages(calculateBookProgress(result.bookProfileProgress, book).sum);
       // Set progress total read pages so far (float)
-      setReadPages(calculateBookProgress(data, book).progress)
-    });
+      setReadPages(calculateBookProgress(result.bookProfileProgress, book).progress)
+    }
 
-  }, [])
+  }
 
 
-  const handleStatusChange = (e: string) => {
+  // Update book status handler
+  const handleStatusChange = async (e: string) => {
     // Change select status
     setStatus(e);
 
+
     // Update select on db
-    updateBookStatus(book.books_profiles[0].id, parseInt(e)).then((data) => {
-      console.log("Update book status", data)
+    const result = await updateBookStatus(book.books_profiles[0].id, parseInt(e));
+    if (result && result.updatedBookStatus) {
+      const updBook = result.updatedBookStatus;
 
-      // Get and return updated book
-      getBookProfile(data.book_id).then((data) => {
-        // Update carousel(parent) books(childs)
-        if (data) {
-          // Get callback data from book card
-          onStatusChange(data);
+      // Format result update book to pass it on callback function
+      const formattedUpdatedBook: BookWithProfiles = {
+        id: updBook.books.id,
+        created_at: updBook.books.created_at,
+        modified_at: updBook.books.modified_at,
+        name: updBook.books.name,
+        author: updBook.books.author,
+        year: updBook.books.year,
+        total_pages: updBook.books.total_pages,
+        category_id: updBook.books.category_id,
+        img_url: updBook.books.img_url,
+        books_profiles: [{
+          status_id: updBook.status_id,
+          id: updBook.id
+        }]
+      };
 
-        }
-      })
+      // Callback to main page
+      onStatusChange(formattedUpdatedBook);
 
-    });
-
-
+      toast.success("Status updated successfully")
+    } else {
+      toast.error("There was a problem trying to update the book status")
+    }
 
 
   }
 
-  // Doesn't make sense to delete a book - once it's in, it's either one of the three statuses
-  const handleDeleteBook = () => {
+  // Delete book handler
+  const handleDeleteBook = async () => {
+
     const bookProfileId = book.books_profiles[0].id;
+
     // Delete book
+    const result = await deleteBookComplete(book.id, bookProfileId);
 
-    // 1. Delete all reading dates from book
-    deleteAllReadingDates(bookProfileId).then((data) => {
+    if (result.success && result.book) {
+      toast.success("Deleted book successfully");
 
-      // 2. Delete the book association w/ profile
-      deleteBookProfile(bookProfileId).then((data) => {
-        // 3. Delete book
-        deleteBook(book.id).then((data) => {
-          console.log(data)
-          // Callback to main page
-          onDeleteBook(data)
-        });
+      // Callback to main page - update book arrays
+      onDeleteBook(result.book)
 
-      })
-
-    })
-
+    } else {
+      toast.error("There was an error when trying to delete the book");
+    }
   }
 
+  // Add reading date handler
   const handleReadingDateCreated = (readingDate: books_profiles_progressModel) => {
     const addedDates = [...booksProgress, readingDate];
     setBooksProgress(addedDates)
@@ -145,29 +153,41 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
 
   }
 
-  const handleDeleteReadingDate = (id: number) => {
-    // Delete reading date
-    deleteReadingDate(id).then((data) => {
-      console.log(data)
+  // Delete reading date handler
+  const handleDeleteReadingDate = async (id: number) => {
+
+    const result = await deleteReadingDate(id);
+
+    if (result && result.deletedReadingDate) {
 
       const filteredDates = booksProgress.filter((b) => b.id !== id);
 
-      // Set new reading dates
+      // Update array without deleted reading date
       setBooksProgress(filteredDates)
-
-
 
       // Set total read pages so far (int)
       setSumReadPages(calculateBookProgress(filteredDates, book).sum);
       // Set progress total read pages so far (float)
       setReadPages(calculateBookProgress(filteredDates, book).progress)
-    })
+
+      toast.success("Reading date deleted successfully")
+    } else {
+      toast.error("There was a problem when trying to delete the reading date")
+    }
+
+
   }
 
 
+  useEffect(() => {
+    fetchStatuses();
+
+    fetchBookProfileProgress();
+
+  }, [])
+
   return (
     <Card className="w-full max-w-sm">
-
       {/** Book data */}
       <CardHeader >
         <CardTitle className="flex items-start gap-1"><Book size={16} />{book.name}</CardTitle>
@@ -202,7 +222,7 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
                     </h4>
 
                     <CollapsibleTrigger asChild className="">
-                      <Button variant="ghost" size="icon" className="size-6">
+                      <Button variant="ghost" size="icon" className="size-6" >
                         <ChevronsUpDown />
                         <span className="sr-only"></span>
                       </Button>
@@ -258,21 +278,26 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
 
         {/** Book status */}
         <CardAction className="w-full">
-          <Select value={status.toString()} onValueChange={handleStatusChange} >
-            <h6>Status</h6>
-            <SelectTrigger
-              className={`
+          {statuses.length === 0
+            ? (<AlertCustom
+              color="error"
+              title="Error"
+              type="destructive"
+              description="No statuses available for the book. Refresh and try again" />)
+            : (<Select value={status.toString()} onValueChange={handleStatusChange} >
+              <h6>Status</h6>
+              <SelectTrigger
+                className={`
               text-xs 
-              
             ${status == '3' ? 'border-border-success bg-bg-success text-text-success '
-                  : status == '2' ? 'border-border-warning bg-bg-warning text-text-warning '
-                    : 'border-border-info bg-bg-info text-text-info '}`}>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent >
-              {statuses.map((e) => (<SelectItem key={e.id} value={e.id.toString()} className="text-xs" >{e.status}</SelectItem>))}
-            </SelectContent>
-          </Select>
+                    : status == '2' ? 'border-border-warning bg-bg-warning text-text-warning '
+                      : 'border-border-info bg-bg-info text-text-info '}`}>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent >
+                {statuses.map((e) => (<SelectItem key={e.id} value={e.id.toString()} className="text-xs" >{e.status}</SelectItem>))}
+              </SelectContent>
+            </Select>)}
 
           {/* Delete Book */}
           <div className="flex flex-col gap-3 mt-4">
