@@ -9,7 +9,7 @@ export type BookWithProfiles = booksModel & {
 };
 
 // Callback Functions
-export type AddBookCallbackFunction = (newBookId: number) => void;
+export type AddBookCallbackFunction = (newBook: BookWithProfiles) => void;
 
 export type UpdateStatusCallbackFunction = (book: BookWithProfiles) => void;
 
