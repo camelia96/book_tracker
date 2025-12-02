@@ -5,7 +5,7 @@ import { AddBook } from "@/components/ui/add-book-form-custom";
 
 import { Separator } from "@/components/ui/separator";
 import { useContext, useEffect, useState } from "react";
-import { getBookProfile, getBooksProfile, getCompletedBooks, getInProgressBooks, getNotStartedBooks } from "../actions/books";
+import { getBooksProfile } from "../actions/books";
 import { CarouselCustom } from "@/components/ui/carousel-custom";
 import { BookWithProfiles } from "@/app/types";
 import { STATUSES_IDS, fakeCurrentProfile } from "./constants/constants";
@@ -16,7 +16,6 @@ import { getProfiles } from "@/actions/profiles";
 export default function Home() {
   // States  
   //const [allBooks, setAllBooks] = useState<BookWithProfiles[]>([]);
-
   const [notStartedBooks, setNotStartedBooks] = useState<BookWithProfiles[]>([]);
   const [inProgressBooks, setInProgressBooks] = useState<BookWithProfiles[]>([]);
   const [completedBooks, setCompletedBooks] = useState<BookWithProfiles[]>([]);
@@ -25,18 +24,14 @@ export default function Home() {
   const [user, setUser] = useState<profilesModel | null>(null)
 
   // Callbacks
-  const handleBookCreated = (newBookId: number) => {
+  const handleBookCreated = (newBook: BookWithProfiles) => {
 
     // Update new book on carousel - not started because by default it creates not started
-    getBookProfile(newBookId).then((data) => {
-      console.log(data);
-      if (data) {
-        setNotStartedBooks([...notStartedBooks, data])
-      }
-    })
+    setNotStartedBooks([...notStartedBooks, newBook])
+
   }
 
-
+  // Status change handler
   const handleStatusUpdate = (updatedBook: BookWithProfiles) => {
     setNotStartedBooks(notStartedBooks.filter(b => b.id !== updatedBook.id))
     setInProgressBooks(inProgressBooks.filter(b => b.id !== updatedBook.id))
@@ -51,7 +46,7 @@ export default function Home() {
     if (updatedStatusId === STATUSES_IDS.not_started) {
       //
       setNotStartedBooks([...notStartedBooks, updatedBook])
-      console.log("new not started books", notStartedBooks)
+
     } else if (updatedStatusId === STATUSES_IDS.in_progress) {
       setInProgressBooks([...inProgressBooks, updatedBook])
 
@@ -61,38 +56,31 @@ export default function Home() {
     }
   }
 
+  // Delete book handler
   const handleDeleteBook = (deletedBook: booksModel) => {
     if (notStartedBooks.find(b => b.id == deletedBook.id)) setNotStartedBooks(notStartedBooks.filter(b => b.id !== deletedBook.id))
     if (inProgressBooks.find(b => b.id == deletedBook.id)) setInProgressBooks(inProgressBooks.filter(b => b.id !== deletedBook.id))
     if (completedBooks.find(b => b.id == deletedBook.id)) setCompletedBooks(completedBooks.filter(b => b.id !== deletedBook.id))
   }
 
+  // Get current profile books
+  const fetchBooksProfile = async () => {
+    const result = await getBooksProfile(fakeCurrentProfile);
+
+    if (result && result.booksProfile) {
+      const allProfileBooks: BookWithProfiles[] = result.booksProfile;
+
+      // Filter and set books by status
+      setNotStartedBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.not_started));
+      setInProgressBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.in_progress));
+      setCompletedBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.completed));
+
+    }
+  }
 
   useEffect(() => {
     // Get books
-    getBooksProfile(fakeCurrentProfile).then(
-      (data) => {
-        const allProfileBooks: BookWithProfiles[] = data;
-
-        // Filter and set books by status
-        setNotStartedBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.not_started));
-        setInProgressBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.in_progress));
-        setCompletedBooks(allProfileBooks.filter((b) => b.books_profiles[0].status_id == STATUSES_IDS.completed));
-      }
-    );
-
-    /* // Get not started books
-    getNotStartedBooks(fakeCurrentProfile).then(setNotStartedBooks)
-    // // Get in progress books
-    getInProgressBooks(fakeCurrentProfile).then(setInProgressBooks)
-    // // Get completed books
-    getCompletedBooks(fakeCurrentProfile).then(setCompletedBooks) */
-
-    /** Get books from profile */
-
-
-
-
+    fetchBooksProfile();
 
   }, [])
 
