@@ -80,7 +80,12 @@ export default function Home() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-between py-32 px-16 gap-6 bg-white dark:bg-black sm:items-start">
         <h1>Book tracker</h1>
-
+        <p>
+          A web application for readers who want to organize their literary journey.Seamlessly track books across three intuitive categories: <span className="font-semibold">Want to Read</span>, <span className="font-semibold">Currently Reading</span>, and <span className="font-semibold">Completed</span>.
+        </p>
+        <p>
+          <span className="font-semibold">BookTracker</span> lets you track reading progress by logging pages read with dates, organize books across shelves that update as you read, and manage your collection by easily removing titles.
+        </p>
         {/* <Separator />
 
         <div>
@@ -95,17 +100,17 @@ export default function Home() {
 
         <Separator />
 
-        <h2>Books to read</h2>
+        <h2 className="">Want to Read</h2>
         <CarouselCustom books={notStartedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
         <Separator />
 
-        <h2>Reading Books</h2>
+        <h2 className="">Currently Reading</h2>
         <CarouselCustom enhanced={true} books={inProgressBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
         <Separator />
 
-        <h2>Read books</h2>
+        <h2 className="">Completed</h2>
         <CarouselCustom books={completedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
       </main>
