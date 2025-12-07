@@ -29,13 +29,15 @@ export const metadata: Metadata = {
  */
 const getSession = () => getServerSession(authOptions);
 
-const session = await getSession();
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const session = await getSession();
+  
   return (
     <html lang="en">
       <body
