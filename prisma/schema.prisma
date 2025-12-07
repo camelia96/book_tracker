@@ -11,9 +11,8 @@ datasource db {
 model books {
   id             Int              @id @default(autoincrement()) @db.SmallInt
   created_at     DateTime         @default(now()) @db.Timestamptz(6)
-  modified_at    DateTime         @default(now()) @db.Timestamptz(6)
   name           String           @db.VarChar
-  author         String           @db.VarChar
+  author         String
   year           Int?             @db.SmallInt
   total_pages    Int              @db.SmallInt
   category_id    Int              @db.SmallInt
@@ -26,11 +25,10 @@ model books {
 model books_profiles {
   id                      Int                       @id @default(autoincrement()) @db.SmallInt
   created_at              DateTime                  @default(now()) @db.Timestamptz(6)
-  modified_at             DateTime                  @default(now()) @db.Timestamptz(6)
-  notes                   String?
   book_id                 Int                       @db.SmallInt
   profile_id              Int                       @db.SmallInt
   status_id               Int                       @db.SmallInt
+  notes                   String?
   books                   books                     @relation(fields: [book_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   profiles                profiles                  @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   statuses                statuses                  @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -41,27 +39,24 @@ model books_profiles {
 model books_profiles_progress {
   id              Int            @id @default(autoincrement()) @db.SmallInt
   created_at      DateTime       @default(now()) @db.Timestamptz(6)
-  modified_at     DateTime       @default(now()) @db.Timestamptz(6)
+  book_profile_id Int            @db.SmallInt
   date            DateTime       @db.Timestamptz(6)
   read_pages      Int            @db.SmallInt
-  book_profile_id Int            @db.SmallInt
   books_profiles  books_profiles @relation(fields: [book_profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model categories {
-  id          Int      @id @default(autoincrement()) @db.SmallInt
-  created_at  DateTime @default(now()) @db.Timestamptz(6)
-  modified_at DateTime @default(now()) @db.Timestamptz(6)
-  category    String   @db.VarChar
-  books       books[]
+  id         Int      @id @default(autoincrement()) @db.SmallInt
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  category   String   @db.VarChar
+  books      books[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model profiles {
   id             Int              @id(map: "profile_pkey") @default(autoincrement()) @db.SmallInt
   created_at     DateTime         @default(now()) @db.Timestamptz(6)
-  modified_at    DateTime         @default(now()) @db.Timestamptz(6)
   username       String           @db.VarChar
   books_profiles books_profiles[]
 }
@@ -70,7 +65,59 @@ model profiles {
 model statuses {
   id             Int              @id @default(autoincrement()) @db.SmallInt
   created_at     DateTime         @default(now()) @db.Timestamptz(6)
-  modified_at    DateTime         @default(now()) @db.Timestamptz(6)
   status         String           @db.VarChar
   books_profiles books_profiles[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Account {
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime
+  refresh_token_expires_in Int?
+  User                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model User {
+  id            String    @id
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  Account       Account[]
+  Session       Session[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
 }
