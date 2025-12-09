@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from "lucide-react";
+import Providers from "./providers";
+import { Button } from "@/components/ui/button";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,28 +23,41 @@ export const metadata: Metadata = {
   description: "A web app to track your book selection, read or not. Enjoy!",
 };
 
-export default function RootLayout({
+/**
+ * Helper function to get the session on the server without having to import the authOptions object every single time
+ * @returns The session object or null
+ */
+const getSession = () => getServerSession(authOptions);
+
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const session = await getSession();
+  
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Toaster 
-        position="bottom-center"
-        duration={5000}
-        icons={{
-          success: <CircleCheckIcon color="green" className="size-4" />,
-          info: <InfoIcon color="gray" className="size-4" />,
-          warning: <TriangleAlertIcon color="#e89005" className="size-4" />,
-          error: <OctagonXIcon color="red" className="size-4" />,
-          loading: <Loader2Icon className="size-4 animate-spin" />,
-        }}
-      />
+        <Providers session={session}>
+          {children}
+        </Providers>
+        <Toaster
+          position="bottom-center"
+          duration={5000}
+          icons={{
+            success: <CircleCheckIcon color="green" className="size-4" />,
+            info: <InfoIcon color="gray" className="size-4" />,
+            warning: <TriangleAlertIcon color="#e89005" className="size-4" />,
+            error: <OctagonXIcon color="red" className="size-4" />,
+            loading: <Loader2Icon className="size-4 animate-spin" />,
+          }}
+
+        />
       </body>
     </html>
   );
