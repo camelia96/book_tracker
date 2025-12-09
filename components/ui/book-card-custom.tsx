@@ -104,7 +104,6 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
       const formattedUpdatedBook: BookWithProfiles = {
         id: updBook.books.id,
         created_at: updBook.books.created_at,
-        modified_at: updBook.books.modified_at,
         name: updBook.books.name,
         author: updBook.books.author,
         year: updBook.books.year,
