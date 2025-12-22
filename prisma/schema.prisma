@@ -69,9 +69,6 @@ model statuses {
   books_profiles books_profiles[]
 }
 
-<<<<<<< HEAD
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-=======
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -84,7 +81,6 @@ model User {
   sessions      Session[]
 }
 
->>>>>>> a89ab436b54b634a059b088da1a6f346b09cf519
 model Account {
   userId                   String
   type                     String
@@ -98,53 +94,22 @@ model Account {
   id_token                 String?
   session_state            String?
   createdAt                DateTime @default(now())
-<<<<<<< HEAD
-  updatedAt                DateTime
-  refresh_token_expires_in Int?
-  User                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-=======
   updatedAt                DateTime @updatedAt
   refresh_token_expires_in Int?
   user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
->>>>>>> a89ab436b54b634a059b088da1a6f346b09cf519
 
   @@id([provider, providerAccountId])
 }
 
-<<<<<<< HEAD
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-=======
->>>>>>> a89ab436b54b634a059b088da1a6f346b09cf519
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   createdAt    DateTime @default(now())
-<<<<<<< HEAD
-  updatedAt    DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model User {
-  id            String    @id
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime
-  Account       Account[]
-  Session       Session[]
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-=======
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
->>>>>>> a89ab436b54b634a059b088da1a6f346b09cf519
 model VerificationToken {
   identifier String
   token      String
