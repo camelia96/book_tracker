@@ -85,7 +85,7 @@ export function AddBook({ user, onBookCreated }: AddBookDialogProps) {
     defaultValues: {
       name: "",
       author: "",
-      img_url: ""
+      img_url: "",
     },
   })
 
