@@ -1,5 +1,5 @@
 "use client"
-import { Badge } from "@/components/ui/badge";
+import { signIn, signOut, useSession } from "next-auth/react"
 import { AddBook } from "@/components/ui/add-book-form-custom";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
@@ -8,8 +8,13 @@ import { CarouselCustom } from "@/components/ui/carousel-custom";
 import { BookWithProfiles } from "@/app/types";
 import { STATUSES_IDS, fakeCurrentProfile } from "./constants/constants";
 import { booksModel } from "@/generated/prisma/models";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+
+  const { data: session, status } = useSession()
+
   // States  
   const [notStartedBooks, setNotStartedBooks] = useState<BookWithProfiles[]>([]);
   const [inProgressBooks, setInProgressBooks] = useState<BookWithProfiles[]>([]);
@@ -69,6 +74,13 @@ export default function Home() {
 
     }
   }
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false }); // ← NO redirect automático
+    router.push("/"); // ← Redirigir manualmente
+    router.refresh(); // ← Forzar recarga de datos
+  };
 
   useEffect(() => {
     // Get books
@@ -78,41 +90,47 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-between py-32 px-16 gap-6 bg-white dark:bg-black sm:items-start">
-        <h1>Book tracker</h1>
-        <p>
-          A web application for readers who want to organize their literary journey.Seamlessly track books across three intuitive categories: <span className="font-semibold">Want to Read</span>, <span className="font-semibold">Currently Reading</span>, and <span className="font-semibold">Completed</span>.
-        </p>
-        <p>
-          <span className="font-semibold">BookTracker</span> lets you track reading progress by logging pages read with dates, organize books across shelves that update as you read, and manage your collection by easily removing titles.
-        </p>
-        {/* <Separator />
+      <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-center py-32 px-16 gap-6 bg-white dark:bg-black sm:items-start">
+        <div className="flex flex-col gap-6">
+          <h1>Book tracker</h1>
+          <p>
+            A web application for readers who want to organize their literary journey.Seamlessly track books across three intuitive categories: <span className="font-semibold">Want to Read</span>, <span className="font-semibold">Currently Reading</span>, and <span className="font-semibold">Completed</span>.
+          </p>
+          <p>
+            <span className="font-semibold">BookTracker</span> lets you track reading progress by logging pages read with dates, organize books across shelves that update as you read, and manage your collection by easily removing titles.
+          </p>
+        </div>
+        {session ? <>
+
+          {/* <Separator />
 
         <div>
           <h2>Profile</h2>
           <Badge variant={"outline"}>username</Badge>
         </div> */}
+          <Button onClick={handleSignOut}>Sign Out</Button>
 
-        <Separator />
+          <Separator />
 
-        {/* Add new book */}
-        <AddBook user={fakeCurrentProfile} onBookCreated={handleBookCreated} />
+          {/* Add new book */}
+          <AddBook user={fakeCurrentProfile} onBookCreated={handleBookCreated} />
 
-        <Separator />
+          <Separator />
 
-        <h2 className="">Want to Read</h2>
-        <CarouselCustom books={notStartedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
+          <h2 className="">Want to Read</h2>
+          <CarouselCustom books={notStartedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
-        <Separator />
+          <Separator />
 
-        <h2 className="">Currently Reading</h2>
-        <CarouselCustom enhanced={true} books={inProgressBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
+          <h2 className="">Currently Reading</h2>
+          <CarouselCustom enhanced={true} books={inProgressBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
-        <Separator />
+          <Separator />
 
-        <h2 className="">Completed</h2>
-        <CarouselCustom books={completedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
+          <h2 className="">Completed</h2>
+          <CarouselCustom books={completedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
+        </> : <Button onClick={() => signIn("github")}>Sign In with GitHub</Button>}
       </main>
     </div>
   );
