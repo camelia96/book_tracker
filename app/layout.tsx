@@ -4,9 +4,9 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from "lucide-react";
 import Providers from "./providers";
-import { Button } from "@/components/ui/button";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,12 +37,13 @@ export default async function RootLayout({
 }>) {
 
   const session = await getSession();
-  
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Analytics />
         <Providers session={session}>
           {children}
         </Providers>
