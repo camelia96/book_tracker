@@ -24,9 +24,9 @@ import { deleteBookComplete } from "@/actions/books";
 import { SingleBookProps } from "@/app/types";
 import { AlertDialogCustom } from "./alert-dialog-custom";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { AlertCustom } from "./alert-custom";
 import { Spinner } from "@/components/ui/spinner"
+import { toast } from "sonner";
 
 
 function calculateBookProgress(data: books_profiles_progressModel[], book: BookWithProfiles) {
