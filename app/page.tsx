@@ -74,12 +74,13 @@ export default function Home() {
 
     }
   }
+  
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut({ redirect: false }); // ← NO redirect automático
-    router.push("/"); // ← Redirigir manualmente
-    router.refresh(); // ← Forzar recarga de datos
+    await signOut({ redirect: false }); 
+    router.push("/"); 
+    router.refresh(); 
   };
 
   useEffect(() => {
@@ -102,12 +103,6 @@ export default function Home() {
         </div>
         {session ? <>
 
-          {/* <Separator />
-
-        <div>
-          <h2>Profile</h2>
-          <Badge variant={"outline"}>username</Badge>
-        </div> */}
           <Button onClick={handleSignOut}>Sign Out</Button>
 
           <Separator />

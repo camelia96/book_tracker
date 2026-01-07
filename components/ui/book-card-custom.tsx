@@ -279,7 +279,7 @@ export function BookCard({ book, enhanced = false, onStatusChange, onDeleteBook,
         {/** Book image */}
         {book.img_url ?
           (<div className="flex items-center justify-center"><img src={book.img_url.toString()} alt="Thumbnail" className=" w-40" /></div>)
-          : <p className=" text-gray-500">No image available</p>}
+          : <div className="w-full flex items-center flex-col gap-4"><img  src={"https://placehold.net/book.svg"}alt="Thumbnail - No Image Available" className=" w-full min-h-12"/></div>}
 
         <Separator />
 
