@@ -60,8 +60,8 @@ export default async function RootLayout({
           }}
 
         />
-        <Link href={"https://github.com/camelia96/book_tracker"} className="flex items-center justify-center py-4 bg-primary-foreground transition duration-150 hover:text-gray-500">
-        <Github strokeWidth={1} size={22} className=""/> <span className="text-[1em]">GitHub Repository</span> 
+        <Link  target="_blank" href={"https://github.com/camelia96/book_tracker"} className="flex items-center justify-center py-4 bg-primary-foreground transition duration-150 hover:text-gray-500">
+          <Github strokeWidth={1} size={22} className="" /> <span className="text-[1em]">GitHub Repository</span>
         </Link>
       </body>
     </html>
