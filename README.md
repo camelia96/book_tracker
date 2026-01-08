@@ -30,13 +30,13 @@ A fullstack web application for tracking your reading progress. Organize books, 
 
 ## 🙏 Acknowledgments
 
-    - Next.js Documentation(https://nextjs.org/docs)
+    - [Next.js Documentation](https://nextjs.org/docs)
 
-    - Prisma Documentation(https://www.prisma.io/docs)
+    - [Prisma Documentation](https://www.prisma.io/docs)
 
-    - Tailwind CSS(https://tailwindcss.com/docs)
+    - [Tailwind CSS](https://tailwindcss.com/docs)
 
-    - Icons from Lucide React(https://lucide.dev/)
+    - [Icons from Lucide React](https://lucide.dev/)
 
 ## 📄 License
 
