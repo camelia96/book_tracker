@@ -74,13 +74,13 @@ export default function Home() {
 
     }
   }
-  
+
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut({ redirect: false }); 
-    router.push("/"); 
-    router.refresh(); 
+    await signOut({ redirect: false });
+    router.push("/");
+    router.refresh();
   };
 
   useEffect(() => {
@@ -101,31 +101,39 @@ export default function Home() {
             <span className="font-semibold">BookTracker</span> lets you track reading progress by logging pages read with dates, organize books across shelves that update as you read, and manage your collection by easily removing titles.
           </p>
         </div>
-        {session ? <>
 
-          <Button onClick={handleSignOut}>Sign Out</Button>
 
-          <Separator />
+        <p className="text-xs text-gray-500 italic">*Authentication is optional, for portfolio purposes only</p>
+        {session ? (
+          <div className="flex flex-col gap-2 items-start">
+            <p>Welcome, {session?.user?.name} </p>
+            <Button onClick={handleSignOut}>Sign Out</Button>
+          </div>
+        ) : (
+          <Button onClick={() => signIn("github")}>Sign In with GitHub</Button>
+        )}
 
-          {/* Add new book */}
-          <AddBook user={fakeCurrentProfile} onBookCreated={handleBookCreated} />
 
-          <Separator />
+        <Separator />
 
-          <h2 className="">Want to Read</h2>
-          <CarouselCustom books={notStartedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
+        {/* Add new book */}
+        <AddBook user={fakeCurrentProfile} onBookCreated={handleBookCreated} />
 
-          <Separator />
+        <Separator />
 
-          <h2 className="">Currently Reading</h2>
-          <CarouselCustom enhanced={true} books={inProgressBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
+        <h2 className="">Want to Read</h2>
+        <CarouselCustom books={notStartedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
-          <Separator />
+        <Separator />
 
-          <h2 className="">Completed</h2>
-          <CarouselCustom books={completedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
+        <h2 className="">Currently Reading</h2>
+        <CarouselCustom enhanced={true} books={inProgressBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
 
-        </> : <Button onClick={() => signIn("github")}>Sign In with GitHub</Button>}
+        <Separator />
+
+        <h2 className="">Completed</h2>
+        <CarouselCustom books={completedBooks} onStatusChange={handleStatusUpdate} onDeleteBook={handleDeleteBook} />
+
       </main>
     </div>
   );
