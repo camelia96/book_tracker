@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Book Tracker 📚
 
-## Getting Started
+A fullstack web application for tracking your reading progress. Organize books, log pages read, and manage your reading library.
 
-First, run the development server:
+## 🌐 Live Demo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+[🔗 **Visit Live Application**](https://booktracker-ten.vercel.app/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Test Credentials:**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Use "Login with GitHub" to access the app
+- No registration required - just authorize with your GitHub account
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Features
 
-## Learn More
+- **📖 Book Management** - Add and delete books from your library
+- **🔐 GitHub Authentication** - Secure OAuth login, no registration required
+- **📊 Progress Tracking** - Log pages read and track reading progress
+- **🏷️ Smart Organization** - Categorize books by status: Not Started, In Progress, Completed
+- **🎨 Modern UI** - Clean, responsive design with Tailwind CSS and shadcn/ui components
+- **⚡ Fast Performance** - Built with Next.js for optimal speed
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Frontend**: React, Next.js, Tailwind CSS, shadcn/ui
+- **Backend**: Next.js API Routes
+- **Database**: Supabase, Prisma
+- **Authentication**: Next-Auth
+- **Deployment**: Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🙏 Acknowledgments
 
-## Deploy on Vercel
+    - Next.js Documentation(https://nextjs.org/docs)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+    - Prisma Documentation(https://www.prisma.io/docs)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    - Tailwind CSS(https://tailwindcss.com/docs)
+
+    - Icons from Lucide React(https://lucide.dev/)
+
+## 📄 License
+
+This project is for portfolio purposes. All design rights reserved.
+
+Designed & Developed by `Camelia`
