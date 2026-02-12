@@ -48,7 +48,7 @@ export async function BookCard({ book }: BookCardProps) {
 
         {/** Book image */}
         {bookData.img_url ?
-          (<div className="flex items-center justify-center"><img src={bookData.img_url.toString()} alt="Thumbnail" className="w-40 " /></div>)
+          (<div className="flex items-center justify-center"><img src={bookData.img_url.toString()} alt="Thumbnail" className="min-h-50 max-h-80 w-auto" /></div>)
           : <div className="flex flex-col items-center w-full gap-4"><img src={"https://placehold.net/book.svg"} alt="Thumbnail - No Image Available" className="w-full min-h-12" /></div>}
 
         {/** Delete book */}
