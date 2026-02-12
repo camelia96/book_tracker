@@ -1,13 +1,10 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateTable
 CREATE TABLE "books" (
-    "id" SMALLINT NOT NULL,
+    "id" SMALLSERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "name" VARCHAR NOT NULL,
-    "author" VARCHAR,
-    "year" SMALLINT,
+    "author" TEXT NOT NULL,
+    "year" SMALLINT NOT NULL,
     "total_pages" SMALLINT NOT NULL,
     "category_id" SMALLINT NOT NULL,
     "img_url" VARCHAR,
@@ -17,9 +14,8 @@ CREATE TABLE "books" (
 
 -- CreateTable
 CREATE TABLE "books_profiles" (
-    "id" SMALLINT NOT NULL,
+    "id" SMALLSERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "modified_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "book_id" SMALLINT NOT NULL,
     "profile_id" SMALLINT NOT NULL,
     "status_id" SMALLINT NOT NULL,
@@ -30,9 +26,9 @@ CREATE TABLE "books_profiles" (
 
 -- CreateTable
 CREATE TABLE "books_profiles_progress" (
-    "id" SMALLINT NOT NULL,
+    "id" SMALLSERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "book_profile" SMALLINT NOT NULL,
+    "book_profile_id" SMALLINT NOT NULL,
     "date" TIMESTAMPTZ(6) NOT NULL,
     "read_pages" SMALLINT NOT NULL,
 
@@ -41,7 +37,7 @@ CREATE TABLE "books_profiles_progress" (
 
 -- CreateTable
 CREATE TABLE "categories" (
-    "id" SMALLINT NOT NULL,
+    "id" SMALLSERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "category" VARCHAR NOT NULL,
 
@@ -50,7 +46,7 @@ CREATE TABLE "categories" (
 
 -- CreateTable
 CREATE TABLE "profiles" (
-    "id" SMALLINT NOT NULL,
+    "id" SMALLSERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "username" VARCHAR NOT NULL,
 
@@ -59,7 +55,7 @@ CREATE TABLE "profiles" (
 
 -- CreateTable
 CREATE TABLE "statuses" (
-    "id" SMALLINT NOT NULL,
+    "id" SMALLSERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" VARCHAR NOT NULL,
 
@@ -70,7 +66,7 @@ CREATE TABLE "statuses" (
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "name" TEXT,
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "emailVerified" TIMESTAMP(3),
     "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -94,6 +90,7 @@ CREATE TABLE "Account" (
     "session_state" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "refresh_token_expires_in" INTEGER,
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("provider","providerAccountId")
 );
@@ -135,11 +132,10 @@ ALTER TABLE "books_profiles" ADD CONSTRAINT "books_profiles_profile_id_fkey" FOR
 ALTER TABLE "books_profiles" ADD CONSTRAINT "books_profiles_status_id_fkey" FOREIGN KEY ("status_id") REFERENCES "statuses"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "books_profiles_progress" ADD CONSTRAINT "books_profiles_progress_book_profile_fkey" FOREIGN KEY ("book_profile") REFERENCES "books_profiles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "books_profiles_progress" ADD CONSTRAINT "books_profiles_progress_book_profile_id_fkey" FOREIGN KEY ("book_profile_id") REFERENCES "books_profiles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
