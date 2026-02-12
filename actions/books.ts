@@ -3,6 +3,7 @@
 import { STATUSES_IDS } from "@/app/constants/constants";
 import { prisma } from "../lib/prisma";
 import { booksModel } from "@/generated/prisma/models";
+import { revalidatePath } from "next/cache";
 
 // Create
 export async function createBook({
@@ -42,7 +43,7 @@ export async function createBook({
 }
 
 // Read
-export async function getBooksProfile(userId: number) {
+/* export async function getBooksProfile(userId: number) {
   try {
     // Fetch all books from database
     const result = await prisma.books.findMany({
@@ -54,11 +55,13 @@ export async function getBooksProfile(userId: number) {
         },
       },
       include: {
-        books_profiles: {
-          select: { id: true, status_id: true },
-        },
+        books_profiles: true,
       },
     });
+
+    if (!result) {
+      throw new Error("There was an error fetching the books from the library");
+    }
 
     return { success: true, booksProfile: result };
   } catch (error) {
@@ -67,7 +70,7 @@ export async function getBooksProfile(userId: number) {
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
-}
+} */
 
 // UPDATE/DELETE: Transactions
 // Sequential operations for deleting the book completely
@@ -91,6 +94,8 @@ export async function deleteBookComplete(
         // Step 3: Delete book
         prisma.books.delete({ where: { id: bookId } }),
       ]);
+
+    revalidatePath("/");
 
     return { success: true, book: deletedBook };
   } catch (error) {
@@ -139,8 +144,10 @@ export async function createBookComplete(
       },
     });
 
+    revalidatePath("/");
     return { success: true, createdBookComplete: result };
   } catch (error: any) {
+    console.log(error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "../lib/prisma";
 
 // Create
@@ -16,6 +17,8 @@ export async function createReadingDate(
       },
     });
 
+    revalidatePath("/")
+
     return { success: true, createdReadingDate: result };
   } catch (error: any) {
     return {
@@ -26,7 +29,7 @@ export async function createReadingDate(
 }
 
 // Read
-export async function getBookProfileProgress(bookProfileId: number) {
+/* export async function getBookProfileProgress(bookProfileId: number) {
   try {
     const result = await prisma.books_profiles_progress.findMany({
       where: {
@@ -40,7 +43,7 @@ export async function getBookProfileProgress(bookProfileId: number) {
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
-}
+} */
 
 // Delete
 export async function deleteReadingDate(readingDateId: number) {
@@ -50,6 +53,8 @@ export async function deleteReadingDate(readingDateId: number) {
         id: readingDateId,
       },
     });
+
+    revalidatePath("/")
     return { success: true, deletedReadingDate: result };
   } catch (error: any) {
     return {

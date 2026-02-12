@@ -1,7 +1,7 @@
 "use server";
 import { prisma } from "../lib/prisma";
 
-export async function getCategories() {
+/* export async function getCategories() {
   try {
     const result = await prisma.categories.findMany();
 
@@ -13,3 +13,4 @@ export async function getCategories() {
     };
   }
 }
+ */

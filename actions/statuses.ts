@@ -2,7 +2,7 @@
 import { prisma } from "../lib/prisma";
 
 // Read
-export async function getStatuses() {
+/* export async function getStatuses() {
   try {
     const result = await prisma.statuses.findMany();
     return { success: true, statuses: result };
@@ -13,3 +13,4 @@ export async function getStatuses() {
     };
   }
 }
+ */

@@ -2,6 +2,7 @@
 
 import { STATUSES_IDS } from "@/app/constants/constants";
 import { prisma } from "../lib/prisma";
+import { revalidatePath } from "next/cache";
 
 // Create
 export async function createBookProfile(userId: number, bookId: number) {
@@ -40,6 +41,8 @@ export async function updateBookStatus(id: number, newStatusId: number) {
         books: true,
       },
     });
+
+    revalidatePath("/");
     return { success: true, updatedBookStatus: result };
   } catch (error) {
     return {
