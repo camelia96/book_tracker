@@ -5,11 +5,12 @@ import { fakeCurrentProfile, STATUSES_IDS } from "./constants/constants";
 import { prisma } from "@/lib/prisma";
 import { AddBook } from "./ui/add-book-form";
 import { Session } from "./ui/session";
+import { BookType } from "./types";
 
 export default async function Home() {
 
   // Fetch all books
-  const library = await prisma.books_profiles.findMany({ include: { books: { include: { categories: true } }, books_profiles_progress: true } });
+  const library: BookType[] = await prisma.books_profiles.findMany({ include: { books: { include: { categories: true } }, books_profiles_progress: true } });
 
   const categories = await prisma.categories.findMany();
 
